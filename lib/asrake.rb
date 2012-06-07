@@ -62,41 +62,76 @@ module ASRake
 				fail "You must define 'output' for this task"
 			end
 
-			task name do
-				#rm_rf @output
+			#I can't see this occuring outside of my testing, but if the output exists in a different form, remove it
+			if output_is_dir? != File.directory?(@output)
+				rm_rf @output.sub(/[\/\\]$/, '') rescue nil
+			end
 
-				cmd = "#{c FlexSDK::compc_path}"
+			#create named task first so it gets the desc if one is added
+			task name do
+				result = c File.expand_path(@output)
+				result << " (#{File.size(@output)} bytes)" unless output_is_dir?
+				puts result
+			end
+
+			#create tasks
+			directory File.dirname(@output)
+			file @output => File.dirname(@output)
+			task name => @output
+
+			#add dependencies on all .as and .mxml files in the source paths
+			dependencies = FileList.new
+			@source_path.each do |path|
+				path.gsub!("\\", "/")
+				dependencies.include(path/"*.as")
+				dependencies.include(path/"**"/"*.as")
+				dependencies.include(path/"*.mxml")
+				dependencies.include(path/"**"/"*.mxml")
+			end
+			if !dependencies.empty?
+				file @output => dependencies
+			end
+
+			#create the task to compile the swc
+			file @output do
+				compc = "#{c FlexSDK::compc_path}"
 				
 				#set output as directory if it ends in a trailing slash
-				cmd << " -directory=true" if @output =~ /[\/\\]$/
-				cmd << " -output=#{c @output}"
+				compc << " -directory=true" if output_is_dir?
+				compc << " -output=#{c @output}"
 
-				cmd << " -target-player=#{@target_player}"
-				cmd << " -swf-version=#{@swf_version}" if @swf_version != nil
+				compc << " -target-player=#{@target_player}"
+				compc << " -swf-version=#{@swf_version}" if @swf_version != nil
 
-				cmd << " -source-path=#{c @source_path.join(',')}" if !@source_path.empty?
-				cmd << " -include-sources=#{c @source_path.join(',')}" if !@source_path.empty?
+				compc << " -source-path=#{c @source_path.join(',')}" if !@source_path.empty?
+				compc << " -include-sources=#{c @source_path.join(',')}" if !@source_path.empty?
 				
 				#add the -load-config option if it is anything other than the default
 				unless @load_config.length == 1 && @load_config[0] == FlexSDK::flex_config
-					cmd << " -load-config=#{c @load_config.join(',')}"
+					compc << " -load-config=#{c @load_config.join(',')}"
 				end
 
-				cmd << " -library-path+=#{c @library_path.join(',')}" if !@library_path.empty?
-				cmd << " -external-library-path+=#{c @external_library_path.join(',')}" if !@external_library_path.empty?
-				cmd << " -include-libraries+=#{c @include_libraries.join(',')}" if !@include_libraries.empty?
+				compc << " -library-path+=#{c @library_path.join(',')}" if !@library_path.empty?
+				compc << " -external-library-path+=#{c @external_library_path.join(',')}" if !@external_library_path.empty?
+				compc << " -include-libraries+=#{c @include_libraries.join(',')}" if !@include_libraries.empty?
 
-				#cmd << ' -include-file images\core_logo.png ..\nexuslib\code\etc\core_logo.png'
+				#compc << ' -include-file images\core_logo.png ..\nexuslib\code\etc\core_logo.png'
 				
-				#cmd << " -include-classes #{classes(@source_path).join(' ')}"
+				#compc << " -include-classes #{classes(@source_path).join(' ')}"
 				
-				run cmd do |line|
+				run compc do |line|
 					generate_error_message_tips(line)
 				end
 			end
-		end#def initialize()
 
-		#provide a clearer 
+		end #def initialize()
+
+		def output_is_dir?
+			return true if @output =~ /[\/\\]$/
+			return false
+		end
+
+		#provide a more understandable alias 
 		def statically_link_only_referenced_classes
 			@library_path
 		end
@@ -109,7 +144,7 @@ module ASRake
 			@external_library_path
 		end
 
-	end#class ASRake::SWC < Rake::TaskLib
+	end #class ASRake::SWC < Rake::TaskLib
 
 end
 

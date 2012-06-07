@@ -1,11 +1,12 @@
 $: << 'lib'
 
 require './lib/asrake'
+require 'rake/packagetask'
 
 task :default => :build
 
-FlexSDK::SDK_PATHS << "C:/develop/sdk/flex_sdk_4.6.0.23201"
-#FlexSDK::SDK_PATHS << 'C:\develop\sdk\flex_sdk_4.6.0.23201'
+#FlexSDK::SDK_PATHS << "C:/develop/sdk/flex_sdk_4.6.0.23201"
+FlexSDK::SDK_PATHS << 'C:\develop\sdk\flex_sdk_4.6.0.23201'
 #FlexSDK::SDK_PATHS << 'C:\bad\develop\sdk\flex_sdk_4.6.0.23201'
 
 desc "The default build task"
