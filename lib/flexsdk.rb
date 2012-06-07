@@ -1,3 +1,5 @@
+require 'host'
+
 class FlexSDK
 	SDK_PATHS = []
 
@@ -38,16 +40,18 @@ class FlexSDK
 	def self.init()
 		if !@@initialized
 			@@flex_root = nil
+			
 			# Find where the flex sdk is installed
 			SDK_PATHS.each do |path|
+				#remove /bin/ fom the end of the path if it exists
 				path.sub!(/[\/\\]bin[\/\\]?$/,'')
 				if File.exists?(path)
+					@@flex_config = path/'frameworks'/'flex-config.xml'
 					# TODO: figure out some method to use reflection to derive these
-					@@adt_path = File.join(path, 'bin', 'adt')
-					@@adl_path = File.join(path, 'bin', 'adl')
-					@@mxmlc_path = File.join(path, 'bin', 'mxmlc')
-					@@compc_path = File.join(path, 'bin', 'compc')
-					@@flex_config = File.join(path, 'frameworks', 'flex-config.xml')
+					@@adt_path = path/'bin'/'adt'
+					@@adl_path = path/'bin'/'adl'
+					@@mxmlc_path = path/'bin'/'mxmlc'
+					@@compc_path = path/'bin'/'compc'
 					#if all the commands exist in the proper locations, set flex_root and break
 					if 	File.exists?(@@adt_path) && File.exists?(@@adl_path) && File.exists?(@@mxmlc_path) &&
 						File.exists?(@@compc_path) && File.exists?(@@flex_config)

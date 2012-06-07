@@ -38,8 +38,14 @@ end
 
 def c(str)
 	if OS::is_windows?
-		str.gsub("/", '\\')
+		str.gsub("/", "\\")
 	else
-		str
+		str.gsub("\\", "/")
+	end
+end
+
+class String
+	def /(join)
+		File.join(self, join)
 	end
 end
