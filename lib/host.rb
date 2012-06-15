@@ -14,15 +14,12 @@ module OS
 end
 
 def run(command, abort_on_failure = true)
-	output = ""
-
 	command.strip!
 
 	puts "> #{command}"
 	IO.popen("#{command} 2>&1") do |proc|
 		while !proc.closed? && (line = proc.gets)
 			puts ">    #{line}"
-			output << line
 			yield line if block_given?
 		end
 	end
@@ -33,7 +30,7 @@ def run(command, abort_on_failure = true)
 		puts msg
 	end
 
-	return output
+	return $?
 end
 
 def c(str)
