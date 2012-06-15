@@ -62,14 +62,25 @@ module ASRake
 				fail "You must define 'output' for this task"
 			end
 
-			#I can't see this occuring outside of my testing, but if the output exists in a different form, remove it
+			if @output.is_a? Hash
+				@output_dir = @output[:dir]
+				@output_file = @output[:file]
+				if @output_dir == nil
+					fail "If output is defined as a Hash, :dir is required"
+				end
+				@output = @output_file != nil ? File.join(@output_dir, @output_file) : @output_dir
+			end
+
+			#I can't see this occuring outside of my testing, but if the output already exists as a directory when
+			#we want a file or as a file when we want a directory, be sure to delete it first
 			if output_is_dir? != File.directory?(@output)
 				rm_rf @output.sub(/[\/\\]$/, '') rescue nil
 			end
 
 			#create named task first so it gets the desc if one is added
-			task name do
-				result = c File.expand_path(@output)
+			#the dependency to actually build the swc is added later
+			Rake::Task.define_task name do
+				result = c @output
 				result << " (#{File.size(@output)} bytes)" unless output_is_dir?
 				puts result
 			end
@@ -127,8 +138,8 @@ module ASRake
 		end #def initialize()
 
 		def output_is_dir?
-			return true if @output =~ /[\/\\]$/
-			return false
+			#if there is an output directoy defined and no output file, or @output ends in a directory separator
+			return ((@output_dir != nil && @output_file == nil) || @output =~ /[\/\\]$/) ? true : false
 		end
 
 		#provide a more understandable alias 
@@ -167,7 +178,7 @@ def generate_error_message_tips(line)
 	advice = []
 	if Integer(@target_player) < 11 && line.include?("Error: Access of undefined property JSON")
 		advice << "Be sure you are compiling with 'target_player' set to 11.0 or higher"
-		advice << "to have access to the native JSON parser. It is currently set to '#{@target_player}'"
+		advice << "to have access to the native JSON parser. It is currently set to #{@target_player}"
 	elsif line.include?("Error: The definition of base class Object was not found")
 		advice << "If you have removed the default flex-config by setting 'load_config' to"
 		advice << "an empty or alternate value (i.e., not appended to it) you must be sure to"

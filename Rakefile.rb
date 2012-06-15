@@ -13,6 +13,7 @@ desc "The default build task"
 ASRake::SWC.new :build do |build|
 	build.target_player = 11.1
 	build.source_path << '..\nexuslib\code\projects\reflection\src'
-	build.output = '..\nexuslib\code\projects\reflection\bin\test.swc'
+	#build.output = '..\nexuslib\code\projects\reflection\bin\test.swc'
+	build.output = {dir:'..\nexuslib\code\projects\reflection\bin', file:'test.swc'}
 	build.statically_link_only_referenced_classes << '..\nexuslib\code\lib\blooddy_crypto_0.3.5\blooddy_crypto.swc'
 end
