@@ -20,6 +20,9 @@ module ASRake
 		attr_accessor :target_player
 		attr_accessor :swf_version
 
+		attr_reader :output_file
+		attr_reader :output_dir
+
 		def initialize(name)
 
 			@library_path = []
@@ -48,27 +51,30 @@ module ASRake
 
 			yield(self) if block_given?
 
-			#verify the necessary filds were filled in
+			#TODO: iterate over all non-default config files provided and look for target-player
 			if @target_player == nil
 				fail "You must define 'target_player' for this task"
 			end
 
+			#TODO: iterate over all non-default config files provided and look for source-path entries
 			if @source_path.empty?
 				fail "You must add at least one path to 'source_path' for this task"
 			end
 
+			#TODO: iterate over all non-default config files provided and look for output
 			if @output == nil
 				fail "You must define 'output' for this task"
 			end
 
-			if @output.is_a? Hash
-				@output_dir = @output[:dir]
-				@output_file = @output[:file]
-				if @output_dir == nil
-					fail "If output is defined as a Hash, :dir is required"
-				end
-				@output = @output_file != nil ? File.join(@output_dir, @output_file) : @output_dir
-			end
+			#output is directory
+			if @output =~ /[\/\\]$/
+				@output_dir = @output
+			else
+				#forward-slashes required for File methods
+				@output.gsub!('\\', '/')
+				@output_dir = File.dirname(@output)
+				@output_file = File.basename(@output)
+			end			
 
 			#I can't see this occuring outside of my testing, but if the output already exists as a directory when
 			#we want a file or as a file when we want a directory, be sure to delete it first
@@ -84,12 +90,7 @@ module ASRake
 				puts result
 			end
 
-			#create tasks
-			directory File.dirname(@output)
-			file @output => File.dirname(@output)
-			task name => @output
-
-			#add dependencies on all .as and .mxml files in the source paths
+			#set dependencies on all .as and .mxml files in the source paths
 			dependencies = FileList.new
 			@source_path.each do |path|
 				path.gsub!("\\", "/")
@@ -98,9 +99,18 @@ module ASRake
 				dependencies.include(path/"*.mxml")
 				dependencies.include(path/"**"/"*.mxml")
 			end
+
+			#create directory task for output
+			directory @output_dir
+
+			#set dependencies for output
+			file @output => @output_dir
 			if !dependencies.empty?
 				file @output => dependencies
 			end
+
+			#add output file task as a dependency to the named task created
+			task name => @output
 
 			#create the task to compile the swc
 			file @output do
@@ -137,8 +147,7 @@ module ASRake
 		end #def initialize()
 
 		def output_is_dir?
-			#if there is an output directoy defined and no output file, or @output ends in a directory separator
-			return ((@output_dir != nil && @output_file == nil) || @output =~ /[\/\\]$/) ? true : false
+			return @output_file == nil
 		end
 
 		#provide a more understandable alias 
