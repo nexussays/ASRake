@@ -1,6 +1,6 @@
 $: << 'lib'
 
-require './lib/asrake'
+require 'asrake'
 require 'rake/packagetask'
 
 task :default => :build

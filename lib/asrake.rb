@@ -1,5 +1,4 @@
 require 'rake/tasklib'
-require 'nokogiri'
 
 #ASRake
 require 'host'
