@@ -35,10 +35,18 @@ end
 
 def c(str)
 	if OS::is_windows?
-		str.gsub("/", "\\")
+		cb str
 	else
-		str.gsub("\\", "/")
+		cf str
 	end
+end
+
+def cb(str)
+	str.gsub("/", "\\")
+end
+
+def cf(str)
+	str.gsub("\\", "/")
 end
 
 class String
