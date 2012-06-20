@@ -93,7 +93,7 @@ class SWC < Rake::TaskLib
 
 		#create the task to compile the swc
 		file output do
-			compc = "#{c FlexSDK::compc_path}"
+			compc = "#{FlexSDK::compc_path}"
 			
 			#set output as directory if it ends in a trailing slash
 			compc << " -directory=true" if output_is_dir?

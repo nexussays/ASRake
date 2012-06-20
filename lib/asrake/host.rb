@@ -34,11 +34,7 @@ def run(command, abort_on_failure = true)
 end
 
 def c(str)
-	if OS::is_windows?
-		cb str
-	else
-		cf str
-	end
+	OS::is_windows? ? cb(str) : cf(str)
 end
 
 def cb(str)
@@ -47,10 +43,4 @@ end
 
 def cf(str)
 	str.gsub("\\", "/")
-end
-
-class String
-	def /(join)
-		File.join(self, join)
-	end
 end

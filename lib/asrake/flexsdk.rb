@@ -46,12 +46,12 @@ class FlexSDK
 				#remove /bin/ fom the end of the path if it exists
 				path.sub!(/[\/\\]bin[\/\\]?$/,'')
 				if File.exists?(path)
-					@@flex_config = path/'frameworks'/'flex-config.xml'
+					@@flex_config = c File.join(path, 'frameworks', 'flex-config.xml')
 					# TODO: figure out some method to use reflection to derive these
-					@@adt_path = path/'bin'/'adt'
-					@@adl_path = path/'bin'/'adl'
-					@@mxmlc_path = path/'bin'/'mxmlc'
-					@@compc_path = path/'bin'/'compc'
+					@@adt_path = c File.join(path, 'bin', 'adt')
+					@@adl_path = c File.join(path, 'bin', 'adl')
+					@@mxmlc_path = c File.join(path, 'bin', 'mxmlc')
+					@@compc_path = c File.join(path, 'bin', 'compc')
 					#if all the commands exist in the proper locations, set flex_root and break
 					if 	File.exists?(@@adt_path) && File.exists?(@@adl_path) && File.exists?(@@mxmlc_path) &&
 						File.exists?(@@compc_path) && File.exists?(@@flex_config)
