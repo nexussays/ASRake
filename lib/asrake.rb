@@ -24,5 +24,5 @@ THE SOFTWARE.
 
 root = File.expand_path(File.dirname(__FILE__))
 $: << root
-$: << File.join(root, "asrake")
-Dir.glob(File.join(root, 'asrake/*.rb')).each {|f| require f }
+#$: << File.join(root, "asrake")
+Dir.glob(File.join(root, "asrake/*_task.rb")).each {|f| require f }

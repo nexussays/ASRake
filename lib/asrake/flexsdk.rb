@@ -1,4 +1,4 @@
-require 'host'
+require 'asrake/host'
 
 class FlexSDK
 	SDK_PATHS = []
