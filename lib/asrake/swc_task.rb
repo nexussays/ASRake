@@ -1,11 +1,10 @@
 require 'rake/tasklib'
 
-#ASRake
-require 'host'
-require 'flexsdk'
+require 'asrake/host'
+require 'asrake/flexsdk'
 
 module ASRake
-class SWC < Rake::TaskLib
+class SWCTask < Rake::TaskLib
 
 	attr_accessor :output
 
@@ -43,13 +42,13 @@ class SWC < Rake::TaskLib
 		yield self if block_given?
 
 		#TODO: iterate over all non-default config files provided and look for target-player
-		fail "You must define 'target_player' for task #{name}" if target_player == nil
+		fail "You must define 'target_player' for #{self}" if target_player == nil
 
 		#TODO: iterate over all non-default config files provided and look for source-path entries
-		fail "You must add at least one path to 'source_path' for task #{name}" if source_path.empty?
+		fail "You must add at least one path to 'source_path' for #{self}" if source_path.empty?
 
 		#TODO: iterate over all non-default config files provided and look for output
-		fail "You must define 'output' for task #{name}" if output == nil
+		fail "You must define 'output' for #{self}" if output == nil
 
 		#if the output path ends in a path separator, it is a directory
 		if output =~ /[\/\\]$/

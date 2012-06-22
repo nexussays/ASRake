@@ -2,7 +2,7 @@ require 'rake/tasklib'
 require 'zip/zip'
 
 module ASRake
-class Package < Rake::TaskLib
+class PackageTask < Rake::TaskLib
 
 	attr_accessor :output
 	attr_accessor :files
@@ -10,12 +10,12 @@ class Package < Rake::TaskLib
 	attr_reader :output_file
 	attr_reader :output_dir
 
-	def initialize(name = :package)
+	def initialize(name = {:package => :build})
 
 		yield self if block_given?
 
-		fail "You must define 'output' for task #{name}" if output == nil
-		fail "You must define 'files' to include for task #{name}" if files == nil
+		fail "You must define 'output' for #{self}" if output == nil
+		fail "You must define 'files' to include for #{self}" if files == nil
 
 		#define named task first so if desc was called it will be attached to it instead of the file task
 		Rake::Task.define_task name do
