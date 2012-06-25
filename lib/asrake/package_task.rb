@@ -10,7 +10,7 @@ class PackageTask < Rake::TaskLib
 	attr_reader :output_file
 	attr_reader :output_dir
 
-	def initialize(name = {:package => :build})
+	def initialize(name = :package)
 
 		yield self if block_given?
 
