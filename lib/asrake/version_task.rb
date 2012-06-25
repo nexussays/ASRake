@@ -9,10 +9,6 @@ class VersionTask < Rake::TaskLib
 	attr_accessor :filetype
 	attr_reader :version
 
-	#
-	# Creates a new VersionTask with the given +filename+. Attempts to
-	# autodetect the +filetype+ and whether or not git or hg is present.
-	#
 	def initialize(name = :version, filename = "VERSION")
 		self.filename = filename
 
@@ -23,7 +19,7 @@ class VersionTask < Rake::TaskLib
 
 		@path = Pathname.new(self.filename)
 		# set filetype from the filename if it hasn't been set already
-		self.filetype = self.filetype || @path.extname[1..-1]
+		self.filetype ||= @path.extname[1..-1]
 
 		# read in the current version
 		contents = @path.read rescue '0.0.0'
@@ -33,13 +29,13 @@ class VersionTask < Rake::TaskLib
 		end
 
 		# create the primary version task
-		desc "Increment version #{@version}"
-		@version_task = task name
+		desc "Increment version from #{@version}"
+		@version_task = Rake::Task.define_task name
 
 		# if the task name is a hash (ie, has dependencies defined) make sure we pull out the task name from it
 		name, _ = name.first if name.is_a? Hash
 
-		task name, [:part] => filename do |t, args|
+		Rake::Task.define_task name, [:part] => filename do |t, args|
 			case (args[:part] || "").chomp.downcase
 				when 'major'
 					puts "Incremented version from #{@version} to #{save(@version.bump!(:major))}"
@@ -59,6 +55,7 @@ class VersionTask < Rake::TaskLib
 			puts "Created version #{save(Version.to_version(ENV['VERSION'] || '0.0.0'))} at #{filename}"
 		end
 		
+		# create a namespace with the same name as the task to provide further options
 		namespace name do
 
 			#add to this task to perform some operation post-bump
