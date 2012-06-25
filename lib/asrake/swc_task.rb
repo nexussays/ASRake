@@ -1,82 +1,45 @@
 require 'rake/tasklib'
 
 require 'asrake/host'
-require 'asrake/flexsdk'
+require 'asrake/compc'
 
 module ASRake
 class SWCTask < Rake::TaskLib
-
-	attr_accessor :output
-
-	attr_accessor :source_path
-	attr_accessor :library_path
-	attr_accessor :external_library_path
-	attr_accessor :include_libraries
-
-	attr_accessor :load_config
-
-	attr_accessor :target_player
-	attr_accessor :swf_version
-
-	attr_accessor :debug
-
-	attr_accessor :dump_config
-
-	#
-	# non-compiler arguments
-	#
-	
-	attr_reader :output_file
-	attr_reader :output_dir
+	include CompcArguments
 
 	# Create a swc compilation task with the given name.
-	def initialize(name = :build)
-		@library_path = []
-		@external_library_path = []
-		@include_libraries = []
-		@source_path = []
-		@debug = true
-		#include default flex-config
-		@load_config = [ FlexSDK::flex_config ]
+	def initialize(name = :build, args = nil)
+		super()
+		self.merge_in args if args != nil
 
 		yield self if block_given?
 
-		#TODO: iterate over all non-default config files provided and look for target-player
+		# TODO: iterate over all non-default config files provided and look for target-player
 		fail "You must define 'target_player' for #{self}" if target_player == nil
 
-		#TODO: iterate over all non-default config files provided and look for source-path entries
+		# TODO: iterate over all non-default config files provided and look for source-path entries
 		fail "You must add at least one path to 'source_path' for #{self}" if source_path.empty?
 
-		#TODO: iterate over all non-default config files provided and look for output
+		# TODO: iterate over all non-default config files provided and look for output
 		fail "You must define 'output' for #{self}" if output == nil
 
-		#if the output path ends in a path separator, it is a directory
-		if output =~ /[\/\\]$/
-			@output_dir = output
-		else
-			#forward-slashes required for File methods
-			@output = cf output
-			@output_dir = File.dirname(output)
-			@output_file = File.basename(output)
-		end
-
-		#create named task first so it gets the desc if one is added
+		# create named task first so it gets the desc if one is added
 		Rake::Task.define_task name do
 			result = c output
 			result << " (#{File.size(output)} bytes)" unless output_is_dir?
 			puts result
 		end
 
-		#if the task name is a hash (ie, has dependencies defined) make sure we pull out the task name from it
+		# if the task name is a hash (ie, has dependencies defined) make sure we pull out the task name from it
 		name, _ = name.first if name.is_a? Hash
 
-		#create directory task for output
+		# create directory task for output
 		directory output_dir
 
-		#create file task for output
+		# create file task for output
 		file output => output_dir
 
-		#set dependencies on all .as and .mxml files in the source paths
+		# set dependencies on all .as and .mxml files in the source paths
 		dependencies = FileList.new
 		source_path.each do |path|
 			path = cf path
@@ -87,62 +50,17 @@ class SWCTask < Rake::TaskLib
 		end
 		file(output => dependencies) if !dependencies.empty?
 
-		#add output file task as a dependency to the named task created
+		# add output file task as a dependency to the named task created
 		task name => output
 
-		#create the task to compile the swc
+		# create the task to compile the swc
 		file output do
-			compc = "#{FlexSDK::compc_path}"
-			
-			#set output as directory if it ends in a trailing slash
-			compc << " -directory=true" if output_is_dir?
-			compc << " -output=#{cf output}"
-
-			compc << " -target-player=#{target_player}"
-			compc << " -swf-version=#{swf_version}" if swf_version != nil
-
-			compc << " -debug=#{debug}"
-			compc << " -source-path=#{cf source_path.join(',')}" if !source_path.empty?
-			
-			#compc << " -include-sources=#{cf source_path.join(',')}" if !source_path.empty?
-			source_path.each do |path|
-				compc << " -include-classes #{get_classes(path).join(' ')}"
-			end
-
-			#add the -load-config option if it is anything other than the default
-			unless load_config.length == 1 && load_config[0] == FlexSDK::flex_config
-				compc << " -load-config=#{cf load_config.join(',')}"
-			end
-
-			compc << " -library-path=#{cf library_path.join(',')}" if !library_path.empty?
-			compc << " -external-library-path=#{cf external_library_path.join(',')}" if !external_library_path.empty?
-			compc << " -include-libraries=#{cf include_libraries.join(',')}" if !include_libraries.empty?
-
-			compc << " -dump-config=#{cf dump_config}" if dump_config != nil
-			#compc << ' -include-file images\core_logo.png ..\nexuslib\code\etc\core_logo.png'
-			
-			run compc do |line|
+			# command is from CompcArguments
+			run command do |line|
 				generate_error_message_tips(line)
 			end
 		end
 
-	end #def initialize()
-
-	def output_is_dir?
-		output_file == nil
-	end
-
-	#provide a more understandable alias 
-	def statically_link_only_referenced_classes
-		library_path
-	end
-
-	def statically_link
-		include_libraries
-	end
-
-	def dynamically_link
-		external_library_path
 	end
 
 	private
@@ -159,7 +77,7 @@ class SWCTask < Rake::TaskLib
 		return arr
 	end
 
-	#Try to include helpful information about specific errors
+	# Try to include helpful information about specific errors
 	def generate_error_message_tips(line)
 		advice = []
 		if Integer(target_player) < 11 && line.include?("Error: Access of undefined property JSON")
@@ -196,3 +114,7 @@ end
 #		puts ext.children
 #	}
 #end
+
+#-dump-config compiler_config.xml
+#-link-report compiler_linkreport.xml
+#-size-report compiler_sizereport.xml
