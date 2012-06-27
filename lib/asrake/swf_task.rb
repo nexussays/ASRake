@@ -9,9 +9,16 @@ class SWFTask < BaseCompilerTask
 	include MxmlcArguments
 
 	# Create a swc compilation task with the given name.
-	def initialize(name = :build, args = nil, &block)
-		super(name, args, FlexSDK::mxmlc, &block)
+	def initialize(name = :build, args = nil)
+		super
+	end
 
+	protected
+
+	def build
+		run "#{FlexSDK::mxmlc}#{generate_args}" do |line|
+			generate_error_message_tips(line)
+		end
 	end
 
 end

@@ -9,8 +9,8 @@ class SWCTask < BaseCompilerTask
 	include CompcArguments
 
 	# Create a swc compilation task with the given name.
-	def initialize(name = :build, args = nil, &block)
-		super(name, args, FlexSDK::compc, &block)
+	def initialize(name = :build, args = nil)
+		super
 
 		# set dependencies on all .as and .mxml files in the source paths
 		dependencies = FileList.new
@@ -21,22 +21,16 @@ class SWCTask < BaseCompilerTask
 			dependencies.include(File.join(path, "**", "*.as"))
 			dependencies.include(File.join(path, "**", "*.mxml"))
 		end
-		file(output => dependencies) if !dependencies.empty?
+		file(self.output => dependencies) if !dependencies.empty?
 
 	end
 
-	private
+	protected
 
-	def get_classes(path)
-		arr = []
-		Dir.chdir(path) do
-			FileList["**/*.as"].pathmap('%X').each do |file|
-				name = file.gsub(/^\.[\/\\]/, "").gsub(/[\/\\]/, ".")
-				yield name if block_given?
-				arr << name
-			end
+	def build
+		run "#{FlexSDK::compc}#{generate_args}" do |line|
+			generate_error_message_tips(line)
 		end
-		return arr
 	end
 
 end

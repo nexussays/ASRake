@@ -6,18 +6,18 @@ module ASRake
 class BaseCompilerTask < Rake::TaskLib
 	include BaseCompilerArguments
 
-	def initialize(name, args, compile, &block)
+	def initialize(name, args)
 		super()
 		@name = name
 		self.merge_in args if args != nil
 
-		#yield self if block_given?
-		block.call(self) if block != nil
+		yield self if block_given?
+		#block.call(self) if block != nil
 
 		# create named task first so it gets the desc if one is added
 		Rake::Task.define_task @name do
-			result = c output
-			result << " (#{File.size(output)} bytes)" unless output_is_dir?
+			result = c self.output
+			result << " (#{File.size(output)} bytes)" unless self.output_is_dir?
 			puts result
 		end
 
@@ -25,21 +25,25 @@ class BaseCompilerTask < Rake::TaskLib
 		@name, _ = name.first if name.is_a? Hash
 
 		# create directory task for output
-		directory output_dir
+		directory self.output_dir
 
 		# create file task for output
-		file output => output_dir
+		file self.output => self.output_dir
 
 		# add output file task as a dependency to the named task created
-		task @name => output
+		task @name => self.output
 		
 		# create the task to compile the swc
-		file output do
-			run "#{compile}#{generate_args}" do |line|
-				generate_error_message_tips(line)
-			end
+		file self.output do
+			self.build
 		end
 
+	end
+
+	protected
+
+	def build
+		fail "build must be defined in subclass"
 	end
 
 	private
