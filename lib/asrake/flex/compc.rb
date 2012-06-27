@@ -1,5 +1,5 @@
-require 'asrake/flexsdk'
-require 'asrake/base_args'
+require 'asrake/flex/flexsdk'
+require 'asrake/flex/compiler_args'
 
 module ASRake
 

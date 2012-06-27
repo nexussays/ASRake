@@ -1,4 +1,4 @@
-require 'asrake/flexsdk'
+require 'asrake/flex/flexsdk'
 require 'nokogiri'
 
 module ASRake
@@ -75,12 +75,26 @@ module ASRake
 			external_library_path
 		end
 
+		# use the air configs if true
+		def isAIR
+			@isAIR
+		end
+		def isAIR= value
+			@isAIR = value
+			# if the default config is in the load-config array, replace it with the proper one
+			if @isAIR
+				self.load_config.map! {|val| val == FlexSDK::flex_config ? FlexSDK::air_config : val}
+			else
+				self.load_config.map! {|val| val == FlexSDK::air_config ? FlexSDK::flex_config : val}
+			end
+		end
+
 		#
 		# Verify properties and then return build arguments
 		#
-		def command
-			# set to true if there are any source paths defined in the config options
-			#configSource? = false
+		def generate_args
+			
+			# set to true if the version is defined in one of the referenced configs
 			isTargetDefined = false
 			# try to find necessary args in any loaded config files
 			unless load_config.length == 1 && load_config[0] == FlexSDK::flex_config
@@ -114,15 +128,17 @@ module ASRake
 			args << " -target-player=#{target_player}" if target_player != nil
 			args << " -swf-version=#{swf_version}" if swf_version != nil
 
+			args << " +configname=air" if isAIR
+
 			args << " -debug=#{debug}"
 			args << " -source-path=#{cf source_path.join(',')}" if !source_path.empty?
 
 			# add the -load-config option if it is anything other than the default
-			unless load_config.length == 1 && load_config[0] == FlexSDK::flex_config
-				# if the default flex config is still in the load_config array, then append all other config files, else replace the first
-				op = load_config.include?(FlexSDK::flex_config) ? "+=" : "="
+			unless load_config.length == 1 && !hasDefaultConfigFile?
+				# if the default flex config is still in the load_config array, then append all config files, otherwise have the first one replace
+				op = hasDefaultConfigFile? ? "+=" : "="
 				load_config.each do |config|
-					args << " -load-config#{op}#{cf config}" unless config == FlexSDK::flex_config
+					args << " -load-config#{op}#{cf config}" unless isDefaultConfig(config)
 					op = "+="
 				end
 			end
@@ -142,6 +158,19 @@ module ASRake
 				# TODO: This needs to concat arrays not overwite them
 				self.send("#{arg}=", args.send(arg))
 			end
+		end
+
+		private
+
+		def hasDefaultConfigFile?
+			self.load_config.each do |path|
+				return true if isDefaultConfig path
+			end
+			return false
+		end
+
+		def isDefaultConfig(path)
+			return (path == FlexSDK::flex_config || path == FlexSDK::air_config)
 		end
 
 	end

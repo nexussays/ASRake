@@ -1,8 +1,8 @@
 require 'rake/tasklib'
 
 require 'asrake/host'
-require 'asrake/compc'
 require 'asrake/basecompilertask'
+require 'asrake/flex/compc'
 
 module ASRake
 class SWCTask < BaseCompilerTask
@@ -10,7 +10,7 @@ class SWCTask < BaseCompilerTask
 
 	# Create a swc compilation task with the given name.
 	def initialize(name = :build, args = nil, &block)
-		super(name, args, FlexSDK::compc_path, &block)
+		super(name, args, FlexSDK::compc, &block)
 
 		# set dependencies on all .as and .mxml files in the source paths
 		dependencies = FileList.new
@@ -41,10 +41,3 @@ class SWCTask < BaseCompilerTask
 
 end
 end
-
-#http://fpdownload.macromedia.com/get/flashplayer/updaters/11/playerglobal11_2.swc
-#frameworks\libs\player
-
-#-dump-config compiler_config.xml
-#-link-report compiler_linkreport.xml
-#-size-report compiler_sizereport.xml

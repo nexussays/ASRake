@@ -1,5 +1,7 @@
 require 'rake/tasklib'
 
+require 'asrake/flex/compiler_args'
+
 module ASRake
 class BaseCompilerTask < Rake::TaskLib
 	include BaseCompilerArguments
@@ -33,7 +35,7 @@ class BaseCompilerTask < Rake::TaskLib
 		
 		# create the task to compile the swc
 		file output do
-			run "#{compile}#{command}" do |line|
+			run "#{compile}#{generate_args}" do |line|
 				generate_error_message_tips(line)
 			end
 		end
@@ -76,3 +78,10 @@ end
 #		puts ext.children
 #	}
 #end
+
+#http://fpdownload.macromedia.com/get/flashplayer/updaters/11/playerglobal11_2.swc
+#frameworks\libs\player
+
+#-dump-config compiler_config.xml
+#-link-report compiler_linkreport.xml
+#-size-report compiler_sizereport.xml
