@@ -1,5 +1,4 @@
-=begin LICENSE
-
+=begin MIT-LICENSE
 Copyright (c) 2012 Malachi Griffie <malachi@nexussays.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,10 +18,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
 =end
 
-root = File.expand_path(File.dirname(__FILE__))
-$: << root
-#$: << File.join(root, "asrake")
-Dir.glob(File.join(root, "asrake/*_task.rb")).each {|f| require f }
+# require all the task files so the user can create them directly
+Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*_task.rb")).each {|f| require f }
