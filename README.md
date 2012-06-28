@@ -79,6 +79,7 @@ end
 ### Packaging AIR
 
 Create your SWF file as normal, but set the `isAIR` property to true
+
 ```ruby
 desc "Build app"
 ASRake::SWFTask.new :build do |build|
@@ -89,7 +90,9 @@ end
 ```
 
 Provide the package task with the AIR and keystore information. If the key doesn't exist, it will be created.
+
 > Be sure that the swf file is included in the package (eg, it is included here by packaging everything in bin)
+
 ```ruby
 ASRake::AIRPackageTask.new :package => :build do |package|
 	package.output = "bin/my_app.air"
@@ -110,11 +113,13 @@ ASRake::VersionTask(task_name = :version, file_name = "VERSION")
 No additional arguments are needed to create a version task. Once added to your Rakefile, you can run `rake version:help` for information on how versioning works.
 
 If you are fine with the defaults, you can just add:
+
 ```ruby
 ASRake::VersionTask.new
 ```
 
 Otherwise you can define the task name and filename as you wish
+
 ```ruby
 ASRake::VersionTask.new :v, "./config/version.txt"
 ```
@@ -122,6 +127,7 @@ ASRake::VersionTask.new :v, "./config/version.txt"
 #### Version Sync
 
 There is a task `version:sync` that is run every time the version changes. This can be useful for things like updating configuration files automatically. To use, add a block to the task:
+
 ```ruby
 #replace :version with whatever you provided to ASRake::VersionTask.new 
 namespace :version do
