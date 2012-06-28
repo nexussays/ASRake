@@ -22,6 +22,8 @@ module BaseCompilerArguments
 	]
 	attr_accessor *@@args
 
+	attr_accessor :additional_args
+
 	#
 	# non-compiler arguments
 	#
@@ -147,6 +149,8 @@ module BaseCompilerArguments
 		args << " -include-libraries=#{cf include_libraries.join(',')}" if !include_libraries.empty?
 
 		args << " -dump-config=#{cf dump_config}" if dump_config != nil
+		
+		args << " #{additional_args}" if self.additional_args != nil
 		#args << ' -include-file images\core_logo.png ..\nexuslib\code\etc\core_logo.png'
 		
 		return args
