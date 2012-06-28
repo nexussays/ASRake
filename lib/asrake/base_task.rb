@@ -8,35 +8,18 @@ class BaseCompilerTask < Rake::TaskLib
 
 	def initialize(name, args)
 		super()
-		@name = name
+
 		self.merge_in args if args != nil
 
 		yield self if block_given?
-		#block.call(self) if block != nil
 
+		@name = name
+		
 		# create named task first so it gets the desc if one is added
-		Rake::Task.define_task @name do
-			result = c self.output
-			result << " (#{File.size(output)} bytes)" unless self.output_is_dir?
-			puts result
-		end
+		Rake::Task.define_task @name
 
 		# if the task name is a hash (ie, has dependencies defined) make sure we pull out the task name from it
 		@name, _ = name.first if name.is_a? Hash
-
-		# create directory task for output
-		directory self.output_dir
-
-		# create file task for output
-		file self.output => self.output_dir
-
-		# add output file task as a dependency to the named task created
-		task @name => self.output
-		
-		# create the task to compile the swc
-		file self.output do
-			self.build
-		end
 
 	end
 
