@@ -2,11 +2,11 @@ require 'rake/tasklib'
 
 require 'asrake/host'
 require 'asrake/base_task'
-require 'asrake/flex/mxmlc'
+require 'asrake/mxmlc_args'
 
 module ASRake
-class SWFTask < BaseCompilerTask
-	include MxmlcArguments
+class MxmlcTask < BaseCompilerTask
+	include MxmlcArguments_Module
 
 	# Create a swc compilation task with the given name.
 	def initialize(name = :build, args = nil)

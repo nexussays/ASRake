@@ -24,13 +24,13 @@ Convenience methods are provided for `include_libraries`, `external_library_path
 How to Use
 ----------
 
-### Build a SWF/SWC
+### Build a SWF or SWC
 
 ```
-ASRake::SWFTask(task_name = :build, compiler_args = nil) |self|
+ASRake::MxmlcTask(task_name = :build, compiler_args = nil) |self|
 ```
 ```
-ASRake::SWCTask(task_name = :build, compiler_args = nil) |self|
+ASRake::CompcTask(task_name = :build, compiler_args = nil) |self|
 ```
 
 You can define the compile arguments elsewhere and pass it to the task, or set them inside the task block, or a combination of both. It is purely preference.
@@ -39,9 +39,9 @@ The following snippets produce identical tasks.
 
 ```ruby
 desc "Build swc"
-ASRake::SWCTask.new :build do |build|
+ASRake::CompcTask.new :build do |build|
 # you can store the compiler arguments, for example, maybe we need to know the output_dir later on
-#compc = ASRake::SWCTask.new :build do |build|
+#compc = ASRake::CompcTask.new :build do |build|
    build.target_player = 11.0
    build.output = "bin/bin/my_project.swc"
    build.debug = true
@@ -51,38 +51,38 @@ end
 ```
 
 ```ruby
-compc = ASRake::Compc.new
-compc.target_player = 11.0
-compc.output = "bin/bin/my_project.swc"
-compc.debug = true
-compc.source_path << "bin/src"
-compc.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
+args = ASRake::CompcArguments.new
+args.target_player = 11.0
+args.output = "bin/bin/my_project.swc"
+args.debug = true
+args.source_path << "bin/src"
+args.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
 
 desc "Build swc"
-ASRake::SWCTask.new :build, compc
+ASRake::CompcTask.new :build, args
 ```
 
 ```ruby
-foo = ASRake::Compc.new
-foo.target_player = 11.0
-foo.output = "bin/bin/my_project.swc"
-foo.debug = false
-foo.source_path << "bin/src"
+args = ASRake::CompcArguments.new
+args.target_player = 11.0
+args.output = "bin/bin/my_project.swc"
+args.debug = false
+args.source_path << "bin/src"
 
 desc "Build swc"
-ASRake::SWCTask.new :build, foo do |bar|
-   bar.debug = true
-   bar.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
+ASRake::CompcTask.new :build, args do |compc|
+   compc.debug = true
+   compc.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
 end
 ```
 
-### Packaging AIR
+### Build an AIR
 
-Create your SWF file as normal, but set the `isAIR` property to true
+Compile your SWF file as normal, but set the `isAIR` property to true
 
 ```ruby
 desc "Build app"
-ASRake::SWFTask.new :build do |build|
+ASRake::MxmlcTask.new :build do |build|
 	build.load_config << "mxmlc_config.xml"
 	build.output = "bin/my_app.swf"
 	build.isAIR = true
@@ -91,10 +91,10 @@ end
 
 Provide the package task with the AIR and keystore information. If the key doesn't exist, it will be created.
 
-> Be sure that the swf file is included in the package (eg, it is included here by packaging everything in bin)
+> Be sure that the swf file is included in the package (eg, it is included here by packaging everything in the bin directory with `-C bin .`)
 
 ```ruby
-ASRake::AIRPackageTask.new :package => :build do |package|
+ASRake::AdtTask.new :package => :build do |package|
 	package.output = "bin/my_app.air"
 	package.keystore = "my_app_cert.p12"
 	package.keystore_name = "my_app"
@@ -143,10 +143,10 @@ end
 ASRake::CleanTask.new(*compiler_args)
 ```
 
-Provide you compiler arguments to `ASRake::CleanTask` and it will automatically create clean and clobber tasks.
+Provide your compiler arguments to `ASRake::CleanTask` and it will automatically create clean and clobber tasks.
 
 ```ruby
-swf = ASRake::SWFTask.new :build do |build|
+swf = ASRake::MxmlcTask.new :build do |build|
 	build.load_config << "mxmlc_config.xml"
 	build.output = "bin/my_app.swf"
 	build.isAIR = true

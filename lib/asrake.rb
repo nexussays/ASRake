@@ -20,5 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 =end
 
-# require all the task files so the user can create them directly
+# require all the task files so users can create them just by requiring asrake
 Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*_task.rb")).each {|f| require f }
+Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*_args.rb")).each {|f| require f }

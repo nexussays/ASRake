@@ -2,7 +2,7 @@ require 'rake/tasklib'
 require 'nokogiri'
 
 module ASRake
-class AIRPackageTask < Rake::TaskLib
+class AdtTask < Rake::TaskLib
 
 	attr_accessor :output
 	#http://help.adobe.com/en_US/air/build/WS5b3ccc516d4fbf351e63e3d118666ade46-7ff1.html

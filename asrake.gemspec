@@ -1,14 +1,14 @@
 Gem::Specification.new do |spec|
 	spec.name        = 'asrake'
-	spec.version     = '0.6.1'
+	spec.version     = '0.7.0'
 	spec.platform	  = Gem::Platform::RUBY
 	
-	spec.authors     = ["Malachi Griffie"]
-	spec.email       = "malachi@nexussays.com"
+	spec.authors     = ['Malachi Griffie']
+	spec.email       = 'malachi@nexussays.com'
 	spec.homepage    = 'https://github.com/nexussays/ASRake'
-	spec.license     = "MIT"
+	spec.license     = 'MIT'
 
-	spec.summary     = "A Rake library for Actionscript projects"
+	spec.summary     = 'A Rake library for Actionscript projects'
 	spec.description = <<DESC
 A Rake library for Actionscript projects. Longer description goes here
 DESC

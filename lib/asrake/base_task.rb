@@ -1,10 +1,10 @@
 require 'rake/tasklib'
 
-require 'asrake/flex/compiler_args'
+require 'asrake/base_compiler_args'
 
 module ASRake
 class BaseCompilerTask < Rake::TaskLib
-	include BaseCompilerArguments
+	include BaseCompilerArguments_Module
 
 	def initialize(name, args)
 		super()

@@ -1,8 +1,13 @@
-require 'asrake/flex/flexsdk'
+require 'asrake/flexsdk'
 require 'nokogiri'
 
 module ASRake
-module BaseCompilerArguments
+
+module BaseCompilerArguments_Module
+
+	#
+	# compiler arguments
+	#
 
 	@@args = [
 		:output,
@@ -33,6 +38,7 @@ module BaseCompilerArguments
 
 	def initialize
 		super
+		@isAIR = false
 		@library_path = []
 		@external_library_path = []
 		@include_libraries = []
@@ -90,6 +96,17 @@ module BaseCompilerArguments
 		end
 	end
 
+	def merge_in(args)
+		@@args.each do |arg|
+			# TODO: This needs to concat arrays not overwite them
+			self.send("#{arg}=", args.send(arg))
+		end
+	end
+
+	def to_s
+		generate_args
+	end
+
 	#
 	# Verify properties and then return build arguments
 	#
@@ -97,25 +114,26 @@ module BaseCompilerArguments
 		
 		# set to true if the version is defined in one of the referenced configs
 		isTargetDefined = false
-		# try to find necessary args in any loaded config files
-		unless load_config.length == 1 && load_config[0] == FlexSDK::flex_config
-			# load config in reverse so last added has priority
-			load_config.reverse.each do |config_path|
-				flex_config = Nokogiri::XML(File.read(config_path))
-				
-				isTargetDefined = true if flex_config.at_css('target-player')
-				#configSource? = true if 
+		if self.target_player == nil
+			# try to find necessary args in any loaded config files
+			unless self.load_config.length == 1 && isDefaultConfig?(self.load_config[0])
+				# load config in reverse so last added has priority
+				self.load_config.reverse.each do |config|
+					flex_config = Nokogiri::XML(File.read(config))
+					
+					isTargetDefined = true if flex_config.at_css('target-player')
+					#configSource? = true if 
+				end
 			end
 		end
 
-		# TODO: iterate over all non-default config files provided and look for target-player
-		fail "You must define 'target_player' for #{self}" if target_player == nil && !isTargetDefined
+		fail "You must define 'target_player' for #{self}" if self.target_player == nil && !isTargetDefined
 
 		# TODO: iterate over all non-default config files provided and look for source-path entries
 		#fail "You must add at least one path to 'source_path' for #{self}" if source_path.empty? && !configSource?
 
 		# TODO: iterate over all non-default config files provided and look for output
-		fail "You must define 'output' for #{self}" if output == nil
+		fail "You must define 'output' for #{self}" if self.output == nil
 
 		#
 		# validation complete, generate build args
@@ -126,29 +144,29 @@ module BaseCompilerArguments
 		args << " -output=#{cf output}"
 		args << " -directory=true" if output_is_dir?
 
-		args << " -target-player=#{target_player}" if target_player != nil
-		args << " -swf-version=#{swf_version}" if swf_version != nil
+		args << " -target-player=#{target_player}" if self.target_player != nil
+		args << " -swf-version=#{swf_version}" if self.swf_version != nil
 
-		args << " +configname=air" if isAIR
+		args << " +configname=air" if self.isAIR
 
 		args << " -debug=#{debug}"
-		args << " -source-path=#{cf source_path.join(',')}" if !source_path.empty?
+		args << " -source-path=#{cf source_path.join(',')}" if !self.source_path.empty?
 
 		# add the -load-config option if it is anything other than the default
-		unless load_config.length == 1 && !hasDefaultConfigFile?
+		unless self.load_config.length == 1 && isDefaultConfig?(self.load_config[0])
 			# if the default flex config is still in the load_config array, then append all config files, otherwise have the first one replace
 			op = hasDefaultConfigFile? ? "+=" : "="
-			load_config.each do |config|
-				args << " -load-config#{op}#{cf config}" unless isDefaultConfig(config)
+			self.load_config.each do |config|
+				args << " -load-config#{op}#{cf config}" unless isDefaultConfig?(config)
 				op = "+="
 			end
 		end
 
-		args << " -library-path=#{cf library_path.join(',')}" if !library_path.empty?
-		args << " -external-library-path=#{cf external_library_path.join(',')}" if !external_library_path.empty?
-		args << " -include-libraries=#{cf include_libraries.join(',')}" if !include_libraries.empty?
+		args << " -library-path=#{cf library_path.join(',')}" if !self.library_path.empty?
+		args << " -external-library-path=#{cf external_library_path.join(',')}" if !self.external_library_path.empty?
+		args << " -include-libraries=#{cf include_libraries.join(',')}" if !self.include_libraries.empty?
 
-		args << " -dump-config=#{cf dump_config}" if dump_config != nil
+		args << " -dump-config=#{cf dump_config}" if self.dump_config != nil
 		
 		args << " #{additional_args}" if self.additional_args != nil
 		#args << ' -include-file images\core_logo.png ..\nexuslib\code\etc\core_logo.png'
@@ -156,23 +174,16 @@ module BaseCompilerArguments
 		return args
 	end
 
-	def merge_in(args)
-		@@args.each do |arg|
-			# TODO: This needs to concat arrays not overwite them
-			self.send("#{arg}=", args.send(arg))
-		end
-	end
-
 	private
 
 	def hasDefaultConfigFile?
 		self.load_config.each do |path|
-			return true if isDefaultConfig path
+			return true if isDefaultConfig? path
 		end
 		return false
 	end
 
-	def isDefaultConfig(path)
+	def isDefaultConfig?(path)
 		return (path == FlexSDK::flex_config || path == FlexSDK::air_config)
 	end
 

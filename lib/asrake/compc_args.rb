@@ -1,10 +1,10 @@
-require 'asrake/flex/flexsdk'
-require 'asrake/flex/compiler_args'
+require 'asrake/flexsdk'
+require 'asrake/base_compiler_args'
 
 module ASRake
 
-module CompcArguments
-	include BaseCompilerArguments
+module CompcArguments_Module
+	include BaseCompilerArguments_Module
 
 	def generate_args
 		compc = super
@@ -31,8 +31,8 @@ module CompcArguments
 
 end
 
-class Compc
-	include CompcArguments
+class CompcArguments
+	include CompcArguments_Module
 end
 
 end

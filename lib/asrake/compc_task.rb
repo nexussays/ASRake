@@ -2,11 +2,11 @@ require 'rake/tasklib'
 
 require 'asrake/host'
 require 'asrake/base_task'
-require 'asrake/flex/compc'
+require 'asrake/compc_args'
 
 module ASRake
-class SWCTask < BaseCompilerTask
-	include CompcArguments
+class CompcTask < BaseCompilerTask
+	include CompcArguments_Module
 
 	# Create a swc compilation task with the given name.
 	def initialize(name = :build, args = nil)
