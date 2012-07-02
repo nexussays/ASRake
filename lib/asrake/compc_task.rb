@@ -1,7 +1,7 @@
 require 'rake/tasklib'
 
 require 'asrake/host'
-require 'asrake/base_task'
+require 'asrake/base_compiler_task'
 require 'asrake/compc_args'
 
 module ASRake
