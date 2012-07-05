@@ -1,7 +1,10 @@
 ASRake
 ======
 
-**Rake library for Actionscript 3 projects**
+**A Rake library for Actionscript 3, Flex, and AIR projects.**
+
+### `gem install asrake`
+
 
 Overview
 --------
@@ -20,6 +23,7 @@ Arguments match those passed to the compiler (mxmlc, compc, adt, etc) with hyphe
 > Since this is still in development, not all compiler arguments have a property mapped to them. Use `additional_args` to pass whatever text you want into the compiler.
 
 Convenience methods are provided for `include_libraries`, `external_library_path`, and `library_path`; you can instead use `statically_link`, `dynamically_link`, and `statically_link_only_referenced_classes` respectively.
+
 
 How to Use
 ----------
@@ -104,7 +108,7 @@ ASRake::AdtTask.new :package => :build do |package|
 end
 ```
 
-### Versioning
+### Version
 
 ```
 ASRake::VersionTask(task_name = :version, file_name = "VERSION")
@@ -153,4 +157,39 @@ swf = ASRake::MxmlcTask.new :build do |build|
 end
 
 ASRake::CleanTask.new swf
+```
+
+### Copy Files
+
+```
+ASRake::CopyTask.new(task_name = :copy) |self|
+```
+
+Copies files from a source to a destination using file modification time to determing if the copy is necessary or not. Basically it's like creating rake `file` tasks in bulk.
+
+```ruby
+ASRake::CopyTask.new :assets do |copy|
+	#
+	# usage: block_param.add(from, to)
+	#
+
+	# use "copy" or "add" at your preference
+	copy.copy "src", "bin/src"
+	copy.add "src/*.xml", "bin"
+
+	# provide arguments as a hash instead
+	copy.add "lib/**/*.swc" => "bin/lib"
+
+	# or in bulk
+	copy.add({"conf/a.config" => "bin/default.config", "conf/b.config" => "conf/alt.config"})
+
+	# or do it all in a block
+	{
+		"src" => "bin/src",
+		"src/*.xml" => "bin",
+		"lib/**/*.swc" => "bin/lib",
+		"conf/a.config" => "bin/default.config",
+		"conf/b.config" => "conf/alt.config"
+	}.each {|from, to| copy.add from, to}
+end
 ```
