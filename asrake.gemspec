@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
 	spec.name        = 'asrake'
-	spec.version     = '0.8.0'
+	spec.version     = '0.8.1'
 	spec.platform	  = Gem::Platform::RUBY
 	
 	spec.authors     = ['Malachi Griffie']
@@ -10,7 +10,8 @@ Gem::Specification.new do |spec|
 
 	spec.summary     = 'A Rake library for Actionscript projects'
 	spec.description = <<DESC
-A Rake library for Actionscript projects. Longer description goes here
+A Rake library for Actionscript 3, Flex, and AIR projects.
+See full documentation at https://github.com/nexussays/ASRake/blob/master/README.md
 DESC
 
 	spec.files       = Dir['lib/**/*.rb'] + %w[LICENSE README.md]

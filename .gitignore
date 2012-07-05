@@ -3,3 +3,4 @@ obj/
 *.lxml
 scratch/*
 .project
+pkg/
