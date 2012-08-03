@@ -5,6 +5,10 @@ module ASRake
 
 module MxmlcArguments_Module
 	include BaseCompilerArguments_Module
+
+	def compiler
+		FlexSDK::mxmlc
+	end
 end
 
 class MxmlcArguments

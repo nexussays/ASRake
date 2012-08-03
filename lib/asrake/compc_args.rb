@@ -6,6 +6,10 @@ module ASRake
 module CompcArguments_Module
 	include BaseCompilerArguments_Module
 
+	def compiler
+		FlexSDK::compc
+	end
+
 	def generate_args
 		compc = super
 		
