@@ -6,7 +6,8 @@ class FlexSDK
 	class << self
 
 		@@initialized = false
-		
+
+		# dynamically create getters for the executables and config files
 		@@executables = %w[adt adl asdoc mxmlc compc]
 		@@configs = %w[flex-config air-config]
 		
@@ -15,15 +16,8 @@ class FlexSDK
 			return @root
 		end
 
-		@@configs.each do |name|
-			method = name.gsub('-','_')
-			define_method method do
-				init()
-				instance_variable_get "@#{method}"
-			end
-		end
-
-		@@executables.each do |name|
+		@@configs.concat(@@executables).each do |name|
+			name = name.gsub('-','_')
 			define_method name do
 				init()
 				instance_variable_get "@#{name}"
