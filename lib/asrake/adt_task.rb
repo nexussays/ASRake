@@ -5,7 +5,7 @@ module ASRake
 class AdtTask < Rake::TaskLib
 
 	attr_accessor :output
-	#http://help.adobe.com/en_US/air/build/WS5b3ccc516d4fbf351e63e3d118666ade46-7ff1.html
+	# http://help.adobe.com/en_US/air/build/WS5b3ccc516d4fbf351e63e3d118666ade46-7ff1.html
 	attr_accessor :application_descriptor
 
 	#
@@ -47,7 +47,7 @@ class AdtTask < Rake::TaskLib
 		fail "You must define 'keystore_name' for #{self}" if self.keystore_name == nil
 		fail "You must define 'storepass' for #{self}" if self.storepass == nil
 
-		#TODO: Somehow confirm that the initialWindow content is included in the build
+		# TODO: Somehow confirm that the initialWindow content is included in the build
 		app_xml = Nokogiri::XML(File.read(application_descriptor))
 		swf = app_xml.at_css("initialWindow > content").content.to_s
 		#swf = File.join(@output_dir, swf)
@@ -101,9 +101,9 @@ class AdtTask < Rake::TaskLib
 						 "Verify the command line arguments used for creating signatures."
 				when 12
 					fail "Invalid input\n" +
-						 "Verify file paths and other arguments passed to ADT on the command line.\n" +
-						 "Be sure the initial content in #{self.application_descriptor} is included in the build:\n" +
-						 "<initialWindow>\n   <content>#{swf}</content>\n</initialWindow>"
+						 "Verify file paths and other arguments passed to ADT on the command line."#\n" +
+						 #"Be sure the initial content in #{self.application_descriptor} is included in the build:\n" +
+						 #"<initialWindow>\n   <content>#{swf}</content>\n</initialWindow>"
 				else
 					fail "Operation exited with status #{status.exitstatus}"
 				end
