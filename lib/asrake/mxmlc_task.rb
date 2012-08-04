@@ -25,13 +25,5 @@ class MxmlcTask < BaseCompilerTask
 
 	end
 
-	protected
-
-	def build
-		run "#{FlexSDK::mxmlc}#{generate_args}" do |line|
-			generate_error_message_tips(line)
-		end
-	end
-
 end
 end

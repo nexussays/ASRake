@@ -36,8 +36,7 @@ module BaseCompilerArguments_Module
 	attr_reader :output_file
 	attr_reader :output_dir
 
-	def initialize
-		super
+	def initialize(args=nil)
 		@isAIR = false
 		@library_path = []
 		@external_library_path = []
@@ -46,6 +45,15 @@ module BaseCompilerArguments_Module
 		@debug = false
 		#include default flex-config
 		@load_config = [ FlexSDK::flex_config ]
+
+		self.merge_in args if args != nil
+
+		yield self if block_given?
+	end
+
+	# compiler needs to be defined in subclass
+	def compiler
+		fail "'compiler' must be defined in subclass"
 	end
 
 	def output
@@ -88,13 +96,16 @@ module BaseCompilerArguments_Module
 	end
 	def isAIR= value
 		@isAIR = value
-		# if the default config is in the load-config array, replace it with the proper one
+		# if the default config is in the load-config array, replace it with the proper one based on context
 		if @isAIR
 			self.load_config.map! {|val| val == FlexSDK::flex_config ? FlexSDK::air_config : val}
 		else
 			self.load_config.map! {|val| val == FlexSDK::air_config ? FlexSDK::flex_config : val}
 		end
 	end
+	# alias them as well
+	alias_method :isAir, :isAIR
+	alias_method :isAir=, :isAIR=
 
 	def merge_in(args)
 		@@args.each do |arg|
@@ -112,6 +123,17 @@ module BaseCompilerArguments_Module
 	#
 	def generate_args
 		
+		#
+		# allow all the array arguments to be set as single strings
+		#
+
+		# TODO: have this be part of the attribute accessor
+		self.source_path = [self.source_path] if self.source_path.is_a? String
+		self.load_config = [self.load_config] if self.load_config.is_a? String
+		self.library_path = [self.library_path] if self.library_path.is_a? String
+		self.external_library_path = [self.external_library_path] if self.external_library_path.is_a? String
+		self.include_libraries = [self.include_libraries] if self.include_libraries.is_a? String
+
 		# set to true if the version is defined in one of the referenced configs
 		isTargetDefined = false
 		if self.target_player == nil
@@ -174,6 +196,17 @@ module BaseCompilerArguments_Module
 		return args
 	end
 
+	def build(tips=true)
+		fail "Compiler not defined in #{self}" if compiler == nil
+		if tips
+			run "#{compiler}#{generate_args}" do |line|
+				generate_error_message_tips(line)
+			end
+		else
+			run "#{compiler}#{generate_args}"
+		end
+	end
+
 	private
 
 	def hasDefaultConfigFile?
@@ -187,5 +220,44 @@ module BaseCompilerArguments_Module
 		return (path == FlexSDK::flex_config || path == FlexSDK::air_config)
 	end
 
+	# Try to include helpful information about specific errors
+	def generate_error_message_tips(line)
+		advice = []
+		if((target_player == nil || Float(target_player) < 11) && line.include?("Error: Access of undefined property JSON"))
+			advice << "Be sure you are compiling with 'target_player' set to 11.0 or higher"
+			advice << "to have access to the native JSON parser. It is currently set to #{target_player}"
+		elsif line.include?("Error: The definition of base class Object was not found")
+			advice << "If you have removed the default flex-config by setting 'load_config' to"
+			advice << "an empty or alternate value (i.e., not appended to it) you must be sure to"
+			advice << "still reference the necessary core Flash files, especially playerglobal.swc"
+		end
+
+		if !advice.empty?
+			puts "*********************************"
+			puts "ASRake Note: " + advice.join("\n")
+			puts "*********************************"
+		end
+	end
+
 end
 end
+
+##fill config with the default flex_config options
+#if use_default_flex_config
+#	#initialize with default values from flex-config
+#	flex_config = Nokogiri::XML(File.read(FlexSDK::flex_config))
+#
+#	target_player = flex_config.css('target-player').children.to_s
+#	swf_version = flex_config.css('swf-version').children.to_s
+#	
+#	flex_config.css('compiler external-library-path path-element').each { |ext|
+#		puts ext.children
+#	}
+#end
+
+#http://fpdownload.macromedia.com/get/flashplayer/updaters/11/playerglobal11_2.swc
+#frameworks\libs\player
+
+#-dump-config compiler_config.xml
+#-link-report compiler_linkreport.xml
+#-size-report compiler_sizereport.xml

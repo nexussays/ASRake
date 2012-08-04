@@ -20,9 +20,12 @@ class CompcTask < BaseCompilerTask
 			self.build
 		end
 
+		# allow setting source_path with '=' instead of '<<'
+		self.source_path = [self.source_path] if self.source_path.is_a? String
+
 		# set dependencies on all .as and .mxml files in the source paths
 		dependencies = FileList.new
-		source_path.each do |path|
+		self.source_path.each do |path|
 			path = cf path
 			dependencies.include(File.join(path, "*.as"))
 			dependencies.include(File.join(path, "*.mxml"))
@@ -38,14 +41,6 @@ class CompcTask < BaseCompilerTask
 			puts result
 		end
 
-	end
-
-	protected
-
-	def build
-		run "#{FlexSDK::compc}#{generate_args}" do |line|
-			generate_error_message_tips(line)
-		end
 	end
 
 end
