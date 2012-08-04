@@ -16,7 +16,7 @@ class FlexSDK
 			return @root
 		end
 
-		@@configs.concat(@@executables).each do |name|
+		[].concat(@@configs).concat(@@executables).each do |name|
 			name = name.gsub('-','_')
 			define_method name do
 				init()
@@ -29,27 +29,27 @@ class FlexSDK
 		def init()
 			if !@@initialized
 				@@root = nil
-				
+				missing = {}
 				# Find where the flex sdk is installed
 				SDK_PATHS.each do |path|
 					#remove /bin/ fom the end of the path if it exists
 					path.sub!(/[\/\\]bin[\/\\]?$/,'')
 					if File.exists?(path)
-						allValid = true
+						missing[SDK_PATHS] = []
 
 						@@configs.each do |name|
 							config = c File.join(path, 'frameworks', "#{name}.xml")
-							allValid = false if !File.exists?(config)
+							missing[SDK_PATHS] << config if !File.exists?(config)
 							instance_variable_set "@#{name.gsub('-','_')}", config
 						end
 
 						@@executables.each do |name|
 							exec = c File.join(path, 'bin', name)
-							allValid = false if !File.exists?(exec)
+							missing[SDK_PATHS] << exec if !File.exists?(exec)
 							instance_variable_set "@#{name}", exec
 						end
 						
-						if allValid
+						if missing[SDK_PATHS].empty?
 							@@root = path
 							break
 						end
@@ -60,6 +60,7 @@ class FlexSDK
 					str = ""
 					if !SDK_PATHS.empty?
 						str << "Could not find a valid Flex SDK at any of the paths in FlexSDK::SDK_PATHS\n=> "
+						# TODO: output which paths are invalid and which are missing a particular binary from missing[] above
 						str << SDK_PATHS.join("\n=> ")
 						str << "\n"
 					end
