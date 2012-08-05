@@ -23,3 +23,5 @@ THE SOFTWARE.
 # require all the task files so users can create them just by requiring asrake
 Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*_task.rb")).each {|f| require f }
 Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*_args.rb")).each {|f| require f }
+
+require 'asrake/file_utils'
