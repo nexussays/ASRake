@@ -12,7 +12,12 @@ task :deploy => :package do
 end
 
 desc "Install the gem locally"
-task :install => :package do
-	run 'gem uninstall asrake'
+task :install => [:package, :uninstall] do
 	run "gem install #{@gem.package_dir}/#{@gem.name}.gem"
+end
+
+# Save a few key strokes
+desc "Uninstall asrake gem"
+task :uninstall do
+	run 'gem uninstall asrake'
 end

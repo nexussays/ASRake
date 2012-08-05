@@ -25,8 +25,8 @@ Arguments match those passed to the compiler (mxmlc, compc, adt, etc) with hyphe
 Convenience methods are provided for `include_libraries`, `external_library_path`, and `library_path`; you can instead use `statically_link`, `dynamically_link`, and `statically_link_only_referenced_classes` respectively.
 
 
-How to Use
-----------
+How to Tasks
+------------
 
 ### Build a SWF or SWC
 
@@ -47,11 +47,11 @@ ASRake::CompcTask.new :build do |build|
 # You can store the compiler arguments for later
 # For example, maybe we need to know the output_dir later on
 #compc = ASRake::CompcTask.new :build do |build|
-   build.target_player = 11.0
-   build.output = "bin/bin/my_project.swc"
-   build.debug = true
-   build.source_path << "bin/src"
-   build.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
+	build.target_player = 11.0
+	build.output = "bin/bin/my_project.swc"
+	build.debug = true
+	build.source_path << "bin/src"
+	build.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
 end
 ```
 
@@ -76,8 +76,8 @@ args.source_path << "bin/src"
 
 desc "Build swc"
 ASRake::CompcTask.new :build, args do |compc|
-   compc.debug = true
-   compc.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
+	compc.debug = true
+	compc.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
 end
 ```
 
@@ -136,9 +136,9 @@ There is a task `version:sync` that is run every time the version changes. This 
 ```ruby
 # replace :version with whatever you provided to ASRake::VersionTask.new 
 namespace :version do
-   task :sync do
-      #update application.xml
-   end
+	task :sync do
+		#update application.xml
+	end
 end
 ```
 
@@ -160,6 +160,9 @@ end
 ASRake::CleanTask.new swf
 ```
 
+Additional Functionality
+------------------------
+
 ### New copy method
 
 ASRake introduces a new copy method `cp_u` on FileUtils and in the global namespace.
@@ -178,4 +181,27 @@ cp_u %w{application.xml my_app.swf config.json}, "/dest"
 
 # use FileList, Dir.glob(), or othr methods to copy groups of files
 cp_u FileList["lib/**/*.swc"], "bin/lib"
+```
+
+### Build without a task
+
+You don't need to create a rake task to build a swf or swc. Just call `build()` on an instance of CompcArguments or MxmlcArguments.
+
+> Note that this will not do any dependency checks, so the build will run even if it is unnecessary
+
+```ruby
+args = ASRake::CompcArguments.new
+args.target_player = 11.0
+args.output = "bin/bin/my_project.swc"
+args.source_path << "bin/src"
+args.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
+args.build()
+
+ASRake::MxmlcArguments.new do |mxmlc|
+	mxmlc.target_player = 11.0
+	mxmlc.output = "bin/bin/my_project.swf"
+	mxmlc.debug = true
+	mxmlc.source_path << "bin/src"
+	mxmlc.build()
+end
 ```
