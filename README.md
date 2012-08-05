@@ -44,7 +44,8 @@ The following snippets produce identical tasks.
 ```ruby
 desc "Build swc"
 ASRake::CompcTask.new :build do |build|
-# you can store the compiler arguments, for example, maybe we need to know the output_dir later on
+# You can store the compiler arguments for later
+# For example, maybe we need to know the output_dir later on
 #compc = ASRake::CompcTask.new :build do |build|
    build.target_player = 11.0
    build.output = "bin/bin/my_project.swc"
@@ -133,7 +134,7 @@ ASRake::VersionTask.new :v, "./config/version.txt"
 There is a task `version:sync` that is run every time the version changes. This can be useful for things like updating configuration files automatically. To use, add a block to the task:
 
 ```ruby
-#replace :version with whatever you provided to ASRake::VersionTask.new 
+# replace :version with whatever you provided to ASRake::VersionTask.new 
 namespace :version do
    task :sync do
       #update application.xml
@@ -159,37 +160,22 @@ end
 ASRake::CleanTask.new swf
 ```
 
-### Copy Files
+### New copy method
 
-```
-ASRake::CopyTask.new(task_name = :copy) |self|
-```
+ASRake introduces a new copy method `cp_u` on FileUtils and in the global namespace.
 
-Copies files from a source to a destination using file modification time to determing if the copy is necessary or not. Basically it's like creating rake `file` tasks in bulk.
+This copies all files from the source that do not exist or are older at the destination
 
 ```ruby
-ASRake::CopyTask.new :assets do |copy|
-	#
-	# usage: block_param.add(from, to)
-	#
+# copy a single file to a destination folder
+cp_u "path/to/file.xml", "/dest/"
 
-	# use "copy" or "add" at your preference
-	copy.copy "src", "bin/src"
-	copy.add "src/*.xml", "bin"
+# copy a single file to a differently named file
+cp_u "path/to/file.xml", "/dest/dest.xml"
 
-	# provide arguments as a hash instead
-	copy.add "lib/**/*.swc" => "bin/lib"
+# copy an array of files
+cp_u %w{application.xml my_app.swf config.json}, "/dest"
 
-	# or in bulk
-	copy.add({"conf/a.config" => "bin/default.config", "conf/b.config" => "conf/alt.config"})
-
-	# or do it all in a block
-	{
-		"src" => "bin/src",
-		"src/*.xml" => "bin",
-		"lib/**/*.swc" => "bin/lib",
-		"conf/a.config" => "bin/default.config",
-		"conf/b.config" => "conf/alt.config"
-	}.each {|from, to| copy.add from, to}
-end
+# use FileList, Dir.glob(), or othr methods to copy groups of files
+cp_u FileList["lib/**/*.swc"], "bin/lib"
 ```
