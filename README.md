@@ -81,6 +81,22 @@ ASRake::CompcTask.new :build, args do |compc|
 end
 ```
 
+### Include ASDoc in a SWC
+
+If you are compiling with `CompcArgs` or a `CompcTask`, you can set the field `include_asdoc` to have documentation added to your swc
+
+```ruby
+desc "Build swc"
+ASRake::CompcTask.new :build do |build|
+	build.target_player = 11.0
+	build.output = "bin/bin/my_project.swc"
+	build.debug = true
+	build.source_path << "bin/src"
+	build.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
+	build.include_asdoc = true
+end
+```
+
 ### Build an AIR
 
 Compile your SWF file as normal, but set the `isAIR` property to true
