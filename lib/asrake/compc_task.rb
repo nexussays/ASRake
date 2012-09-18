@@ -3,6 +3,7 @@ require 'rake/tasklib'
 require 'asrake/host'
 require 'asrake/base_compiler_task'
 require 'asrake/compc_args'
+require 'asrake/asdoc'
 
 module ASRake
 class CompcTask < BaseCompilerTask
@@ -42,6 +43,36 @@ class CompcTask < BaseCompilerTask
 			result = c self.output
 			result << " (#{File.size(output)} bytes)" unless self.output_is_dir?
 			puts result
+		end
+
+		if @include_asdoc
+			file self.output do
+				asdoc = ASRake::Asdoc.new
+				asdoc.output = "#{self.output_dir}/.asrake/"
+				asdoc.source_path = self.source_path
+				asdoc.library_path = self.library_path
+				asdoc.load_config = self.load_config
+				self.source_path.each do |path|
+					asdoc.doc_classes << ASRake::get_classes(path)
+				end
+				asdoc.keep_xml = true
+				asdoc.skip_xsl = true
+				asdoc.lenient = true
+				asdoc.exclude_dependencies = true
+				asdoc.execute
+
+				if output_is_dir?
+					cp_r File.join(asdoc.output, 'tempdita'), File.join(self.output_dir, 'docs')
+				else
+					Zip::ZipFile.open(self.output) do |zipfile|
+						FileList[File.join(asdoc.output, 'tempdita', '*')].each do |file|
+							zipfile.add(File.join('docs', File.basename(file)), file)
+						end
+					end
+				end
+
+				rm_rf asdoc.output
+			end
 		end
 
 	end

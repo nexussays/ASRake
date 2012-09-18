@@ -4,3 +4,5 @@ obj/
 scratch/*
 .project
 pkg/
+etc/
+test/*
