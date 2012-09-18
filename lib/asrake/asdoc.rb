@@ -80,6 +80,7 @@ class Asdoc
 				command << " -#{arg}=#{value}" if value
 			when :array
 				value.flatten!
+				value.uniq!
 				value = value.map{|s| s.index(' ') != nil ? "'#{s}'" : s} if value.length > 1
 				command << " -#{arg} #{cf value.join(' ')}" if !value.empty?
 			when :dir

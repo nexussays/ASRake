@@ -45,8 +45,13 @@ class VersionTask < Rake::TaskLib
 					puts "Incremented version from #{@version} to #{save(@version.bump!(:revision))}"
 				when ''
 					puts "Current version is #{@version}"
+					puts "Version number format is Major.Minor.Revision (aka Major.Minor.Patch)"
+					puts "To increment the version, provide the respective part as an argument."
+					puts "rake #{@version_task}[major]    => #{@version.bump(:major)}"
+					puts "rake #{@version_task}[minor]    => #{@version.bump(:minor)}"
+					puts "rake #{@version_task}[revision] => #{@version.bump(:revision)}"
 				else
-					fail "Invalid version argument '#{args[:part]}', run 'rake #{@help_task}' for help."
+					fail "Invalid version argument '#{args[:part]}', run 'rake #{name}' for help."
 			end
 			@sync_task.execute()
 		end
@@ -60,17 +65,7 @@ class VersionTask < Rake::TaskLib
 
 			#add to this task to perform some operation post-bump
 			@sync_task = task :sync
-			
-			desc "Display help for version task"
-			@help_task = task :help do
-				puts "Version number format is Major.Minor.Revision (aka Major.Minor.Patch)"
-				puts "To display the current version, run without arguments"
-				puts "rake #{@version_task} => #{@version}"
-				puts "To increment the version, provide the respective part as an argument."
-				puts "rake #{@version_task}[major]    => #{@version.bump(:major)}"
-				puts "rake #{@version_task}[minor]    => #{@version.bump(:minor)}"
-				puts "rake #{@version_task}[revision] => #{@version.bump(:revision)}"
-			end
+
 		end
 
 	end
