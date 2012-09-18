@@ -256,6 +256,7 @@ end
 #end
 
 #http://fpdownload.macromedia.com/get/flashplayer/updaters/11/playerglobal11_2.swc
+#https://github.com/nexussays/playerglobal/raw/master/player/11.2/playerglobal.swc
 #frameworks\libs\player
 
 #-dump-config compiler_config.xml

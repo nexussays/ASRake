@@ -13,10 +13,13 @@ class CompcTask < BaseCompilerTask
 		super
 
 		# create directory task for output
-		directory self.output_dir
-
+		if !output_is_dir?
+			directory self.output_dir
+			file self.output => self.output_dir
+		end
+		
 		# create file task for output
-		file self.output => self.output_dir do
+		file self.output do
 			self.build
 		end
 

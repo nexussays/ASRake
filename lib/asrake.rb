@@ -25,3 +25,21 @@ Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*_task.rb")
 Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*_args.rb")).each {|f| require f }
 
 require 'asrake/file_utils'
+
+module ASRake
+class << self
+
+def get_classes(path)
+	arr = []
+	Dir.chdir(path) do
+		FileList["**/*.as"].pathmap('%X').each do |file|
+			name = file.gsub(/^\.[\/\\]/, "").gsub(/[\/\\]/, ".")
+			yield name if block_given?
+			arr << name
+		end
+	end
+	return arr
+end
+
+end
+end
