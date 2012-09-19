@@ -48,7 +48,7 @@ class CompcTask < BaseCompilerTask
 		if @include_asdoc
 			file self.output do
 				asdoc = ASRake::Asdoc.new
-				asdoc.output = "#{self.output_dir}/.asrake/"
+				asdoc.output = "#{self.output_dir}/.asrake_temp/"
 				asdoc.source_path = self.source_path
 				asdoc.library_path = self.library_path
 				asdoc.load_config = self.load_config
@@ -59,19 +59,26 @@ class CompcTask < BaseCompilerTask
 				asdoc.skip_xsl = true
 				asdoc.lenient = true
 				asdoc.exclude_dependencies = true
-				asdoc.execute
+				asdoc.execute do |line|
+					# make this silent by swallowing output
+				end
 
 				if output_is_dir?
 					cp_r File.join(asdoc.output, 'tempdita'), File.join(self.output_dir, 'docs')
 				else
 					Zip::ZipFile.open(self.output) do |zipfile|
+						# remove any existing docs (eg, from -include-libraries linking a swc with asdoc)
+						begin
+							zipfile.remove('docs')
+						rescue
+						end
 						FileList[File.join(asdoc.output, 'tempdita', '*')].each do |file|
 							zipfile.add(File.join('docs', File.basename(file)), file)
 						end
 					end
 				end
 
-				rm_rf asdoc.output
+				rm_rf asdoc.output, :verbose => false
 			end
 		end
 
