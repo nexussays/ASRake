@@ -158,24 +158,6 @@ namespace :version do
 end
 ```
 
-### Clean
-
-```
-ASRake::CleanTask.new(*compiler_args)
-```
-
-Provide your compiler arguments to `ASRake::CleanTask` and it will automatically create clean and clobber tasks.
-
-```ruby
-swf = ASRake::MxmlcTask.new :build do |build|
-	build.load_config << "mxmlc_config.xml"
-	build.output = "bin/my_app.swf"
-	build.isAIR = true
-end
-
-ASRake::CleanTask.new swf
-```
-
 Additional Functionality
 ------------------------
 
