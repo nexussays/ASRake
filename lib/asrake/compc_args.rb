@@ -23,6 +23,11 @@ module CompcArguments_Module
 		return compc
 	end
 
+	def merge_in(args)
+		super
+		self.include_asdoc = args.include_asdoc
+	end
+
 end
 
 class CompcArguments

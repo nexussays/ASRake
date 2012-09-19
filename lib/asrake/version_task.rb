@@ -51,7 +51,7 @@ class VersionTask < Rake::TaskLib
 					puts "rake #{@version_task}[minor]    => #{@version.bump(:minor)}"
 					puts "rake #{@version_task}[revision] => #{@version.bump(:revision)}"
 				else
-					fail "Invalid version argument '#{args[:part]}', run 'rake #{name}' for help."
+					fail "Invalid version argument '#{args[:part]}', run 'rake #{@version_task}' for help."
 			end
 			@sync_task.execute()
 		end

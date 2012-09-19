@@ -2,18 +2,18 @@ require './lib/asrake/host'
 require 'rubygems'
 require 'rubygems/package_task'
 
-@gem = Gem::PackageTask.new Gem::Specification.load('asrake.gemspec') do |pkg|
+package = Gem::PackageTask.new Gem::Specification.load('asrake.gemspec') do |pkg|
 	pkg.need_zip = false
 end
 
 desc "Push gem to rubygems.org"
 task :deploy => :package do
-	run "gem push #{@gem.package_dir}/#{@gem.name}.gem"
+	run "gem push #{package.package_dir}/#{package.name}.gem"
 end
 
 desc "Install the gem locally"
-task :install => [:package, :uninstall] do
-	run "gem install #{@gem.package_dir}/#{@gem.name}.gem"
+task :test => [:package, :uninstall] do
+	run "gem install #{package.package_dir}/#{package.name}.gem"
 end
 
 # Save a few key strokes
