@@ -53,10 +53,7 @@ class CompcTask < BaseCompilerTask
 				asdoc.keep_xml = true
 				asdoc.skip_xsl = true
 				asdoc.lenient = true
-				asdoc.exclude_dependencies = true
-				asdoc.execute do |line|
-					# make this silent by swallowing output
-				end
+				asdoc.execute { |line| }
 
 				if output_is_dir?
 					cp_r File.join(asdoc.output, 'tempdita'), File.join(self.output_dir, 'docs')

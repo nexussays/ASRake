@@ -128,7 +128,7 @@ class Asdoc
 		self.library_path << args.library_path
 		self.library_path << args.include_libraries
 		self.library_path << args.external_library_path
-		args.source_path.each { |p| self.doc_classes << ASRake::get_classes(p) } if args.kind_of? CompcArguments
+		args.source_path.each { |p| self.doc_classes << ASRake::get_classes(p) } if args.kind_of? ASRake::CompcArguments_Module
 	end
 
 	def execute(&block)
