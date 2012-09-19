@@ -49,12 +49,7 @@ class CompcTask < BaseCompilerTask
 			file self.output do
 				asdoc = ASRake::Asdoc.new
 				asdoc.output = "#{self.output_dir}/.asrake_temp/"
-				asdoc.source_path = self.source_path
-				asdoc.library_path = self.library_path
-				asdoc.load_config = self.load_config
-				self.source_path.each do |path|
-					asdoc.doc_classes << ASRake::get_classes(path)
-				end
+				asdoc.add(self)
 				asdoc.keep_xml = true
 				asdoc.skip_xsl = true
 				asdoc.lenient = true
