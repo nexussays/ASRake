@@ -115,7 +115,7 @@ module BaseCompilerArguments_Module
 	end
 
 	def to_s
-		generate_args
+		@output
 	end
 
 	#
@@ -198,8 +198,11 @@ module BaseCompilerArguments_Module
 
 	def build(tips=true)
 		fail "Compiler not defined in #{self}" if compiler == nil
+		puts
 		if tips
+			puts "> #{compiler}#{generate_args}"
 			run "#{compiler}#{generate_args}" do |line|
+				puts ">    #{line}"
 				generate_error_message_tips(line)
 			end
 		else

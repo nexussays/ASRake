@@ -16,10 +16,10 @@ end
 def run(command, abort_on_failure = true)
 	command.strip!
 
-	puts "> #{command}"
+	puts "> #{command}" if !block_given?
 	IO.popen("#{command} 2>&1") do |proc|
 		while !proc.closed? && (line = proc.gets)
-			puts ">    #{line}"
+			puts ">    #{line}" if !block_given?
 			yield line if block_given?
 		end
 	end
