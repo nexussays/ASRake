@@ -2,16 +2,13 @@ require 'asrake/flexsdk'
 require 'nokogiri'
 
 module ASRake
-
-module BaseCompilerArguments_Module
+class BaseCompiler
 
 	#
 	# compiler arguments
 	#
 
 	@@args = [
-		:output,
-
 		:source_path,
 		:library_path,
 		:external_library_path,
@@ -27,6 +24,8 @@ module BaseCompilerArguments_Module
 	]
 	attr_accessor *@@args
 
+	attr_reader :output
+
 	attr_accessor :additional_args
 
 	#
@@ -36,7 +35,7 @@ module BaseCompilerArguments_Module
 	attr_reader :output_file
 	attr_reader :output_dir
 
-	def initialize(args=nil)
+	def initialize(file)
 		@isAIR = false
 		@library_path = []
 		@external_library_path = []
@@ -46,22 +45,7 @@ module BaseCompilerArguments_Module
 		#include default flex-config
 		@load_config = [ FlexSDK::flex_config ]
 
-		self.merge_in args if args != nil
-
-		yield self if block_given?
-	end
-
-	# compiler needs to be defined in subclass
-	def compiler
-		fail "'compiler' must be defined in subclass"
-	end
-
-	def output
-		@output
-	end
-
-	def output= value
-		@output = value
+		@output = file
 		# if the output path ends in a path separator, it is a directory
 		if @output =~ /[\/\\]$/
 			@output_dir = @output
@@ -71,6 +55,32 @@ module BaseCompilerArguments_Module
 			@output_dir = File.dirname(@output)
 			@output_file = File.basename(@output)
 		end
+
+		yield self if block_given?
+
+		# allow setting source_path with '=' instead of '<<'
+		# actually, no, this is really bad and confusing we should probably throw when they try to assign
+		#self.source_path = [self.source_path] if self.source_path.is_a? String
+
+		# create file task for output
+		file self.output do
+			self.build
+			# TODO: Want to output this even if the dependencies are met and the task isn't run
+			result = c self.output
+			result << " (#{File.size(output)} bytes)" unless self.output_is_dir?
+			puts result
+		end
+
+		# create directory task for output
+		if !output_is_dir?
+			directory self.output_dir
+			file self.output => self.output_dir
+		end
+	end
+
+	# compiler needs to be defined in subclass
+	def compiler
+		fail "'compiler' must be defined in subclass"
 	end
 
 	def output_is_dir?
@@ -123,33 +133,29 @@ module BaseCompilerArguments_Module
 	#
 	def generate_args
 		
-		#
-		# allow all the array arguments to be set as single strings
-		#
-
-		# TODO: have this be part of the attribute accessor
-		self.source_path = [self.source_path] if self.source_path.is_a? String
-		self.load_config = [self.load_config] if self.load_config.is_a? String
-		self.library_path = [self.library_path] if self.library_path.is_a? String
-		self.external_library_path = [self.external_library_path] if self.external_library_path.is_a? String
-		self.include_libraries = [self.include_libraries] if self.include_libraries.is_a? String
+		# TODO: have this be checked when assigned and throw on string so the user understands the proper syntax
+		#self.source_path = [self.source_path] if self.source_path.is_a? String
+		#self.load_config = [self.load_config] if self.load_config.is_a? String
+		#self.library_path = [self.library_path] if self.library_path.is_a? String
+		#self.external_library_path = [self.external_library_path] if self.external_library_path.is_a? String
+		#self.include_libraries = [self.include_libraries] if self.include_libraries.is_a? String
 
 		# set to true if the version is defined in one of the referenced configs
-		isTargetDefined = false
+		is_target_defined = false
 		if self.target_player == nil
 			# try to find necessary args in any loaded config files
-			unless self.load_config.length == 1 && isDefaultConfig?(self.load_config[0])
+			unless self.load_config.length == 1 && is_default_config?(self.load_config[0])
 				# load config in reverse so last added has priority
 				self.load_config.reverse.each do |config|
 					flex_config = Nokogiri::XML(File.read(config))
 					
-					isTargetDefined = true if flex_config.at_css('target-player')
+					is_target_defined = true if flex_config.at_css('target-player')
 					#configSource? = true if 
 				end
 			end
 		end
 
-		fail "You must define 'target_player' for #{self}" if self.target_player == nil && !isTargetDefined
+		fail "You must define 'target_player' for #{self}" if self.target_player == nil && !is_target_defined
 
 		# TODO: iterate over all non-default config files provided and look for source-path entries
 		#fail "You must add at least one path to 'source_path' for #{self}" if source_path.empty? && !configSource?
@@ -175,11 +181,11 @@ module BaseCompilerArguments_Module
 		args << " -source-path=#{cf source_path.join(',')}" if !self.source_path.empty?
 
 		# add the -load-config option if it is anything other than the default
-		unless self.load_config.length == 1 && isDefaultConfig?(self.load_config[0])
+		unless self.load_config.length == 1 && is_default_config?(self.load_config[0])
 			# if the default flex config is still in the load_config array, then append all config files, otherwise have the first one replace
-			op = hasDefaultConfigFile? ? "+=" : "="
+			op = has_default_config_file? ? "+=" : "="
 			self.load_config.each do |config|
-				args << " -load-config#{op}#{cf config}" unless isDefaultConfig?(config)
+				args << " -load-config#{op}#{cf config}" unless is_default_config?(config)
 				op = "+="
 			end
 		end
@@ -212,14 +218,14 @@ module BaseCompilerArguments_Module
 
 	private
 
-	def hasDefaultConfigFile?
+	def has_default_config_file?
 		self.load_config.each do |path|
-			return true if isDefaultConfig? path
+			return true if is_default_config? path
 		end
 		return false
 	end
 
-	def isDefaultConfig?(path)
+	def is_default_config?(path)
 		return (path == FlexSDK::flex_config || path == FlexSDK::air_config)
 	end
 
@@ -231,7 +237,7 @@ module BaseCompilerArguments_Module
 			advice << "to have access to the native JSON parser. It is currently set to #{target_player}"
 		elsif line.include?("Error: The definition of base class Object was not found")
 			advice << "If you have removed the default flex-config by setting 'load_config' to"
-			advice << "an empty or alternate value (i.e., not appended to it) you must be sure to"
+			advice << "an empty or alternate value using = instead of << you must be sure to"
 			advice << "still reference the necessary core Flash files, especially playerglobal.swc"
 		end
 
@@ -257,10 +263,6 @@ end
 #		puts ext.children
 #	}
 #end
-
-#http://fpdownload.macromedia.com/get/flashplayer/updaters/11/playerglobal11_2.swc
-#https://github.com/nexussays/playerglobal/raw/master/player/11.2/playerglobal.swc
-#frameworks\libs\player
 
 #-dump-config compiler_config.xml
 #-link-report compiler_linkreport.xml

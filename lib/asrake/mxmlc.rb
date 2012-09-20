@@ -1,19 +1,13 @@
-require 'rake/tasklib'
-
 require 'asrake/host'
-require 'asrake/base_compiler_task'
-require 'asrake/mxmlc_args'
+require 'asrake/base_compiler'
+require 'asrake/asdoc'
 
 module ASRake
-class MxmlcTask < BaseCompilerTask
-	include MxmlcArguments_Module
+class Mxmlc < BaseCompilerTask
 
 	# Create a swc compilation task with the given name.
 	def initialize(name = :build, args = nil)
 		super
-
-		# create directory task for output
-		directory self.output_dir
 
 		# always build until we can properly grab dependencies
 		task @name => self.output_dir do
@@ -23,6 +17,10 @@ class MxmlcTask < BaseCompilerTask
 			puts result
 		end
 
+	end
+
+	def compiler
+		FlexSDK::mxmlc
 	end
 
 end

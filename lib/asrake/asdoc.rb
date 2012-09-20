@@ -112,13 +112,16 @@ class Asdoc
 		attr_accessor name
 	end
 
-	def initialize
+	def initialize(output)
+
 		# set all defaults
 		@@compiler_args.each do |name, type|
 			instance_variable_set("@#{name}", []) if type == :array || type == :dirs
 		end
 
 		@doc_sources = []
+
+		@output = output
 
 		yield self if block_given?
 	end
@@ -128,7 +131,7 @@ class Asdoc
 		self.library_path << args.library_path
 		self.library_path << args.include_libraries
 		self.library_path << args.external_library_path
-		args.source_path.each { |p| self.doc_classes << ASRake::get_classes(p) } if args.kind_of? ASRake::CompcArguments_Module
+		args.source_path.each { |p| self.doc_classes << ASRake::get_classes(p) } if args.kind_of? ASRake::Compc
 	end
 
 	def execute(&block)
