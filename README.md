@@ -12,7 +12,7 @@ Overview
 Add the path(s) to your Flex SDK for all systems that will need to run the Rake tasks.
 ```ruby
 FlexSDK::SDK_PATHS << 'C:\develop\sdk\flex_sdk_4.6.0.23201'
-FlexSDK::SDK_PATHS << "C:/develop/sdk/flex_sdk_4.5.1"
+FlexSDK::SDK_PATHS << "C:/develop/sdk/flex_sdk 4.5.1"
 FlexSDK::SDK_PATHS << "/opt/lib/adobe/flex_4.6"
 ```
 
@@ -31,66 +31,45 @@ How to Tasks
 ### Build a SWF or SWC
 
 ```
-ASRake::MxmlcTask(task_name = :build, compiler_args = nil) |self|
+ASRake::Mxmlc(file) |self|
 ```
 ```
-ASRake::CompcTask(task_name = :build, compiler_args = nil) |self|
+ASRake::Compc(file) |self|
 ```
 
-You can define the compile arguments elsewhere and pass it to the task, or set them inside the task block, or a combination of both. It is purely preference.
+Assign arguments for your build and optionally run it with a friendlier-named task:
 
-The following snippets produce identical tasks.
+```ruby
+args = ASRake::Compc.new "bin/bin/my_project.swc"
+args.target_player = 11.0
+args.debug = true
+args.source_path << "bin/src"
+args.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
+
+desc "Build swc"
+task :build => args
+```
+
+You can also define arguments in a block on creation:
 
 ```ruby
 desc "Build swc"
-ASRake::CompcTask.new :build do |build|
-# You can store the compiler arguments for later
-# For example, maybe we need to know the output_dir later on
-#compc = ASRake::CompcTask.new :build do |build|
+ASRake::Compc.new "bin/bin/my_project.swc" do |build|
 	build.target_player = 11.0
-	build.output = "bin/bin/my_project.swc"
 	build.debug = true
 	build.source_path << "bin/src"
 	build.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
 end
 ```
 
-```ruby
-args = ASRake::CompcArguments.new
-args.target_player = 11.0
-args.output = "bin/bin/my_project.swc"
-args.debug = true
-args.source_path << "bin/src"
-args.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
-
-desc "Build swc"
-ASRake::CompcTask.new :build, args
-```
-
-```ruby
-args = ASRake::CompcArguments.new
-args.target_player = 11.0
-args.output = "bin/bin/my_project.swc"
-args.debug = false
-args.source_path << "bin/src"
-
-desc "Build swc"
-ASRake::CompcTask.new :build, args do |compc|
-	compc.debug = true
-	compc.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
-end
-```
-
 ### Include ASDoc in a SWC
 
-If you are compiling with `CompcArgs` or a `CompcTask`, you can set the field `include_asdoc` to have documentation added to your swc
+If you are compiling with `Compc`, you can set the field `include_asdoc` to have documentation added to your swc
 
 ```ruby
 desc "Build swc"
-ASRake::CompcTask.new :build do |build|
+ASRake::Compc.new "bin/bin/my_project.swc" do |build|
 	build.target_player = 11.0
-	build.output = "bin/bin/my_project.swc"
-	build.debug = true
 	build.source_path << "bin/src"
 	build.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
 	build.include_asdoc = true
@@ -103,9 +82,8 @@ Compile your SWF file as normal, but set the `isAIR` property to true
 
 ```ruby
 desc "Build app"
-ASRake::MxmlcTask.new :build do |build|
+ASRake::Mxmlc.new "bin/my_app.swf" do |build|
 	build.load_config << "mxmlc_config.xml"
-	build.output = "bin/my_app.swf"
 	build.isAIR = true
 end
 ```
@@ -183,23 +161,20 @@ cp_u FileList["lib/**/*.swc"], "bin/lib"
 
 ### Build without a task
 
-You don't need to create a rake task to build a swf or swc. Just call `build()` on an instance of CompcArguments or MxmlcArguments.
+You don't need to create a rake task to build a swf or swc. Just call `execute()` on an instance of Compc or Mxmlc.
 
 > Note that this will not do any dependency checks, so the build will run even if it is unnecessary
 
 ```ruby
-args = ASRake::CompcArguments.new
+args = ASRake::Compc.new "bin/bin/my_project.swc"
 args.target_player = 11.0
-args.output = "bin/bin/my_project.swc"
 args.source_path << "bin/src"
 args.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
-args.build()
+args.execute()
 
-ASRake::MxmlcArguments.new do |mxmlc|
+(ASRake::Mxmlc.new "bin/bin/my_project.swf" do |mxmlc|
 	mxmlc.target_player = 11.0
-	mxmlc.output = "bin/bin/my_project.swf"
 	mxmlc.debug = true
 	mxmlc.source_path << "bin/src"
-	mxmlc.build()
-end
+end).execute()
 ```
