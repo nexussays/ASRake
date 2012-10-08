@@ -1,15 +1,49 @@
-module OS
-	def OS.is_mac?
+module ASRake
+class << self
+
+	def get_classes(path)
+		arr = []
+		Dir.chdir(path) do
+			FileList["**/*.as"].pathmap('%X').each do |file|
+				name = file.gsub(/^\.[\/\\]/, "").gsub(/[\/\\]/, ".")
+				yield name if block_given?
+				arr << name
+			end
+		end
+		return arr
+	end
+
+end
+end
+
+module ASRake::OS
+class << self
+	def is_mac?
 		RUBY_PLATFORM.downcase.include?("darwin")
 	end
 
-	def OS.is_windows?
+	def is_windows?
 		require 'rbconfig'
 		RbConfig::CONFIG['host_os'] =~ /mswin|mingw/
 	end
 
-	def OS.is_linux?
+	def is_linux?
 		RUBY_PLATFORM.downcase.include?("linux")
+	end
+end
+end
+
+module ASRake::PathUtils
+	def c(str)
+		ASRake::OS::is_windows? ? cb(str) : cf(str)
+	end
+
+	def cb(str)
+		str.gsub("/", "\\")
+	end
+
+	def cf(str)
+		str.gsub("\\", "/")
 	end
 end
 
@@ -31,16 +65,4 @@ def run(command, abort_on_failure = true)
 	end
 
 	return $?
-end
-
-def c(str)
-	OS::is_windows? ? cb(str) : cf(str)
-end
-
-def cb(str)
-	str.gsub("/", "\\")
-end
-
-def cf(str)
-	str.gsub("\\", "/")
 end

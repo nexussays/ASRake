@@ -1,9 +1,13 @@
+require 'asrake/base_task'
 require 'asrake/flexsdk'
 require 'nokogiri'
 
 module ASRake
-class BaseCompiler
+class BaseCompiler < BaseTask
 
+	include ASRake::PathUtils
+	include Rake::DSL
+	
 	#
 	# compiler arguments
 	#
@@ -20,22 +24,15 @@ class BaseCompiler
 
 		:debug,
 
-		:dump_config
+		:dump_config,
+
+		:additional_args
 	]
 	attr_accessor *@@args
 
-	attr_reader :output
+	def initialize(file, exe_path)
+		@exe = exe_path
 
-	attr_accessor :additional_args
-
-	#
-	# non-compiler arguments
-	#
-	
-	attr_reader :output_file
-	attr_reader :output_dir
-
-	def initialize(file)
 		@isAIR = false
 		@library_path = []
 		@external_library_path = []
@@ -45,46 +42,12 @@ class BaseCompiler
 		#include default flex-config
 		@load_config = [ FlexSDK::flex_config ]
 
-		@output = file
-		# if the output path ends in a path separator, it is a directory
-		if @output =~ /[\/\\]$/
-			@output_dir = @output
-		else
-			# forward-slashes required for File methods
-			@output = cf @output
-			@output_dir = File.dirname(@output)
-			@output_file = File.basename(@output)
-		end
-
-		yield self if block_given?
+		super(file)
 
 		# allow setting source_path with '=' instead of '<<'
 		# actually, no, this is really bad and confusing we should probably throw when they try to assign
 		#self.source_path = [self.source_path] if self.source_path.is_a? String
 
-		# create file task for output
-		file self.output do
-			self.build
-			# TODO: Want to output this even if the dependencies are met and the task isn't run
-			result = c self.output
-			result << " (#{File.size(output)} bytes)" unless self.output_is_dir?
-			puts result
-		end
-
-		# create directory task for output
-		if !output_is_dir?
-			directory self.output_dir
-			file self.output => self.output_dir
-		end
-	end
-
-	# compiler needs to be defined in subclass
-	def compiler
-		fail "'compiler' must be defined in subclass"
-	end
-
-	def output_is_dir?
-		output_file == nil
 	end
 
 	# provide a more understandable alias 
@@ -116,17 +79,6 @@ class BaseCompiler
 	# alias them as well
 	alias_method :isAir, :isAIR
 	alias_method :isAir=, :isAIR=
-
-	def merge_in(args)
-		@@args.each do |arg|
-			# TODO: This needs to concat arrays not overwite them
-			self.send("#{arg}=", args.send(arg))
-		end
-	end
-
-	def to_s
-		@output
-	end
 
 	#
 	# Verify properties and then return build arguments
@@ -202,17 +154,11 @@ class BaseCompiler
 		return args
 	end
 
-	def build(tips=true)
-		fail "Compiler not defined in #{self}" if compiler == nil
-		puts
-		if tips
-			puts "> #{compiler}#{generate_args}"
-			run "#{compiler}#{generate_args}" do |line|
-				puts ">    #{line}"
-				generate_error_message_tips(line)
-			end
-		else
-			run "#{compiler}#{generate_args}"
+	def execute
+		puts "> #{@exe}#{generate_args}"
+		run "#{@exe}#{generate_args}" do |line|
+			puts ">    #{line}"
+			generate_error_message_tips(line)
 		end
 	end
 

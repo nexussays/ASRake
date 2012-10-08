@@ -1,11 +1,14 @@
+require 'asrake/util'
 require 'rake/tasklib'
 require 'nokogiri'
 
 # http://help.adobe.com/en_US/flex/using/WSd0ded3821e0d52fe1e63e3d11c2f44bc36-7ffa.html
 
-module ASRake
-class Asdoc
+class ASRake::Asdoc
 
+	include ASRake::PathUtils
+	include Rake::DSL
+	
 	attr_accessor :additional_args
 
 	# we have some special handling of this
@@ -112,7 +115,9 @@ class Asdoc
 		attr_accessor name
 	end
 
-	def initialize(output)
+	def initialize(output=nil)
+
+		raise "Output directory must be provided to ASDoc.new" if output == nil
 
 		# set all defaults
 		@@compiler_args.each do |name, type|
@@ -175,5 +180,4 @@ class Asdoc
 		run(command, true, &block)
 	end
 
-end
 end

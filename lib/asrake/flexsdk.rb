@@ -1,4 +1,4 @@
-require 'asrake/host'
+require 'asrake/util'
 
 class FlexSDK
 
@@ -6,6 +6,8 @@ SDK_PATHS = []
 
 class << self
 
+	include ASRake::PathUtils
+	
 	@@initialized = false
 
 	# dynamically create getters for the executables and config files

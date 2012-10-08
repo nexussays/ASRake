@@ -1,3 +1,4 @@
+require 'asrake/util'
 require 'rake/tasklib'
 require 'nokogiri'
 

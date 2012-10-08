@@ -20,26 +20,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 =end
 
-# require all the task files so users can create them just by requiring asrake
-Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*_task.rb")).each {|f| require f }
-Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*_args.rb")).each {|f| require f }
-
-require 'asrake/file_utils'
-
-module ASRake
-class << self
-
-def get_classes(path)
-	arr = []
-	Dir.chdir(path) do
-		FileList["**/*.as"].pathmap('%X').each do |file|
-			name = file.gsub(/^\.[\/\\]/, "").gsub(/[\/\\]/, ".")
-			yield name if block_given?
-			arr << name
-		end
-	end
-	return arr
-end
-
-end
-end
+# require all files
+Dir.glob(File.join(File.expand_path(File.dirname(__FILE__)), "asrake/*.rb")).each {|f| require f }

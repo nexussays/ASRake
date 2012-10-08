@@ -1,17 +1,20 @@
-require 'asrake/host'
+require 'asrake/util'
 require 'asrake/base_compiler'
 require 'asrake/asdoc'
 
 module ASRake
 class Compc < BaseCompiler
 
+	include ASRake::PathUtils
+	include Rake::DSL
+	
 	attr_accessor :include_asdoc
 
 	#
 	# Create a compc task for the provided swc
 	#
 	def initialize(swc_file)
-		super
+		super(swc_file, FlexSDK::compc)
 
 		# set dependencies on all .as and .mxml files in the source paths
 		dependencies = FileList.new
@@ -19,10 +22,10 @@ class Compc < BaseCompiler
 			dependencies.include(File.join(cf path, "**/*.as"))
 			dependencies.include(File.join(cf path, "**/*.mxml"))
 		end
-		file(self.output => dependencies) if !dependencies.empty?
+		Rake::FileTask.define_task(self.output => dependencies) if !dependencies.empty?
 
 		# update build task to include asdoc
-		file self.output do
+		Rake::FileTask.define_task self.output do
 			if self.include_asdoc
 				asdoc = ASRake::Asdoc.new File.join(self.output_dir, ".asrake_temp")
 				asdoc.add(self)
@@ -40,9 +43,10 @@ class Compc < BaseCompiler
 						begin
 							zipfile.remove("docs")
 						rescue
+							#no rescue
 						end
-						FileList["#{asdoc.output}/tempdita/*")].each do |file|
-							zipfile.add("docs/#{File.basename(file)}"), file)
+						FileList["#{asdoc.output}/tempdita/*"].each do |file|
+							zipfile.add("docs/#{File.basename(file)}", file)
 						end
 					end
 				end
@@ -51,10 +55,6 @@ class Compc < BaseCompiler
 			end
 		end
 
-	end
-
-	def compiler
-		FlexSDK::compc
 	end
 
 	def generate_args
