@@ -46,12 +46,14 @@ class << self
 				@@configs.each do |name|
 					config = c File.join(path, 'frameworks', "#{name}.xml")
 					missing[SDK_PATHS] << config if !File.exists?(config)
+					config = "\"#{config}\"" if config =~ /\s/
 					instance_variable_set "@#{name.gsub('-','_')}", config
 				end
 
 				@@executables.each do |name|
 					exec = c File.join(path, 'bin', name)
 					missing[SDK_PATHS] << exec if !File.exists?(exec)
+					exec = "\"#{exec}\"" if exec =~ /\s/
 					instance_variable_set "@#{name}", exec
 				end
 				
@@ -71,7 +73,7 @@ class << self
 				str << "\n"
 			end
 			str << "Append a valid SDK path in your rakefile, e.g.:\nFlexSDK::SDK_PATHS << 'C:\\develop\\sdk\\flex_sdk_4.6.0.23201'"
-			str << "\nFor more information, see: http://adobe.com/go/flex_sdk/"
+			#str << "\nFor more information, see: http://adobe.com/go/flex_sdk/"
 			fail str
 		end
 	end

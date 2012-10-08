@@ -22,10 +22,10 @@ class Compc < BaseCompiler
 			dependencies.include(File.join(cf path, "**/*.as"))
 			dependencies.include(File.join(cf path, "**/*.mxml"))
 		end
-		Rake::FileTask.define_task(self.output => dependencies) if !dependencies.empty?
+		file(self.output => dependencies) if !dependencies.empty?
 
 		# update build task to include asdoc
-		Rake::FileTask.define_task self.output do
+		file self.output do
 			if self.include_asdoc
 				asdoc = ASRake::Asdoc.new File.join(self.output_dir, ".asrake_temp")
 				asdoc.add(self)

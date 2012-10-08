@@ -11,7 +11,6 @@ class Package < BaseTask
 	attr_accessor :files
 
 	def initialize(file=nil)
-
 		super(file)
 	end
 
