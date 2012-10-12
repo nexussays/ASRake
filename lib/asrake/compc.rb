@@ -19,8 +19,8 @@ class Compc < BaseCompiler
 		# set dependencies on all .as and .mxml files in the source paths
 		dependencies = FileList.new
 		self.source_path.each do |path|
-			dependencies.include(File.join(cf path, "**/*.as"))
-			dependencies.include(File.join(cf path, "**/*.mxml"))
+			dependencies.include(cf File.join(path, "**/*.as"))
+			dependencies.include(cf File.join(path, "**/*.mxml"))
 		end
 		file(self.output => dependencies) if !dependencies.empty?
 
