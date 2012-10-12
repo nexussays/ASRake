@@ -5,6 +5,9 @@ require 'nokogiri'
 module ASRake
 class AdtTask < Rake::TaskLib
 
+	include ASRake::PathUtils
+	include Rake::DSL
+	
 	attr_accessor :output
 	# http://help.adobe.com/en_US/air/build/WS5b3ccc516d4fbf351e63e3d118666ade46-7ff1.html
 	attr_accessor :application_descriptor

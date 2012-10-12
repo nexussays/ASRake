@@ -18,7 +18,7 @@ class BaseTask
 
 		raise "Output file/directory must be provided" if file == nil
 
-		@output = file
+		@output = file.to_s
 		# if the output path ends in a path separator, it is a directory
 		if @output =~ /[\/\\]$/
 			@output_dir = @output
