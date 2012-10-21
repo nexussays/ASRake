@@ -33,18 +33,20 @@ class << self
 end
 end
 
-module ASRake::PathUtils
-	def c(str)
-		ASRake::OS::is_windows? ? cb(str) : cf(str)
+module ASRake::Path
+class << self
+	def env(str)
+		ASRake::OS::is_windows? ? back(str) : forward(str)
 	end
 
-	def cb(str)
+	def back(str)
 		str.gsub("/", "\\")
 	end
 
-	def cf(str)
+	def forward(str)
 		str.gsub("\\", "/")
 	end
+end
 end
 
 def run(command, abort_on_failure = true)
@@ -53,8 +55,11 @@ def run(command, abort_on_failure = true)
 	puts "> #{command}" if !block_given?
 	IO.popen("#{command} 2>&1") do |proc|
 		while !proc.closed? && (line = proc.gets)
-			puts ">    #{line}" if !block_given?
-			yield line if block_given?
+			if block_given?
+				yield line
+			else
+				puts ">    #{line}"
+			end
 		end
 	end
 

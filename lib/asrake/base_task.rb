@@ -3,20 +3,19 @@ require 'asrake/util'
 module ASRake
 class BaseTask
 
-	include ASRake::PathUtils
 	include Rake::DSL
 
 	#
-	# non-compiler arguments
+	# output file or directory
 	#
 	
 	attr_reader :output
 	attr_reader :output_file
 	attr_reader :output_dir
 
-	def initialize(file=nil)
+	def initialize(file)
 
-		raise "Output file/directory must be provided" if file == nil
+		raise "An output file must be provided" if file == nil
 
 		@output = file.to_s
 		# if the output path ends in a path separator, it is a directory
@@ -24,7 +23,7 @@ class BaseTask
 			@output_dir = @output
 		else
 			# forward-slashes required for File methods
-			@output = cf @output
+			@output = Path::forward @output
 			@output_dir = File.dirname(@output)
 			@output_file = File.basename(@output)
 		end
@@ -35,9 +34,7 @@ class BaseTask
 		file self.output do
 			self.execute
 			# TODO: Want to output this even if the dependencies are met and the task isn't run
-			result = c self.output
-			result << " (#{File.size(output)} bytes)" unless self.output_is_dir?
-			puts result
+			puts "#{Path::env self.output} (#{File.size(output)} bytes)" unless self.output_is_dir?
 		end
 
 		# create directory task for output
@@ -60,6 +57,15 @@ class BaseTask
 
 	def to_s
 		@output
+	end
+
+	def to_str
+		@output
+	end
+
+	# this is probably a terrible idea
+	def pathmap *args
+		to_s.pathmap *args
 	end
 
 	def execute

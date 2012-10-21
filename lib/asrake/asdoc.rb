@@ -6,8 +6,8 @@ require 'nokogiri'
 
 class ASRake::Asdoc
 
-	include ASRake::PathUtils
 	include Rake::DSL
+	include ASRake
 	
 	attr_accessor :additional_args
 
@@ -140,27 +140,29 @@ class ASRake::Asdoc
 	end
 
 	def execute(&block)
-		command = "#{FlexSDK::asdoc}"
-
+		args = ""
 		@@compiler_args.each do |name, type|
 			arg = name.to_s.gsub('_','-')
 			value = instance_variable_get("@#{name}")
 			case type
 			when :bool
-				command << " -#{arg}=#{value}" if value
+				args << " -#{arg}=#{value}" if value
 			when :dirs
 				value.flatten!
 				value.uniq!
 				value = value.map{|s| s.index(' ') != nil ? "\"#{s}\"" : s} if value.length > 1
-				command << " -#{arg} #{cf value.join(' ')}" if !value.empty?
+				args << " -#{arg} #{Path::forward value.join(' ')}" if !value.empty?
 			when :dir
-				command << " -#{arg}=#{cf value}" if value != nil
+				if value != nil
+					value = "\"#{value}\"" if value.index(' ') != nil
+					args << " -#{arg}=#{Path::forward value}"
+				end
 			when :array
 				value.flatten!
 				value.uniq!
-				command << " -#{arg} #{value.join(' ')}" if !value.empty?
+				args << " -#{arg} #{value.join(' ')}" if !value.empty?
 			when :string
-				command << " -#{arg} #{value}" if value != nil
+				args << " -#{arg} #{value}" if value != nil
 			else
 				fail "unknown type #{type}"
 			end
@@ -169,15 +171,14 @@ class ASRake::Asdoc
 		# Use doc-sources argument if it has been assigned (duh) or if neither doc-classes or doc-namespaces have
 		# been assigned and source-path has
 		if !self.doc_sources.empty?
-			command << " -doc-sources #{cf doc_sources.join(' ')}"
+			args << " -doc-sources #{Path::forward doc_sources.join(' ')}"
 		elsif !self.source_path.empty? && self.doc_classes.empty? && self.doc_namespaces.empty?
-			command << " -doc-sources #{cf source_path.join(' ')}" if !self.source_path.empty?
+			args << " -doc-sources #{Path::forward source_path.join(' ')}" if !self.source_path.empty?
 		end
 
-		command << " #{additional_args}" if self.additional_args != nil
+		args << " #{additional_args}" if self.additional_args != nil
 		
-		puts if !block_given?
-		run(command, true, &block)
+		run("#{FlexSDK::asdoc} #{args}", true, &block)
 	end
 
 end

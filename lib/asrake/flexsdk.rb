@@ -3,10 +3,11 @@ require 'asrake/util'
 class FlexSDK
 
 SDK_PATHS = []
+SDK_PATHS << ENV["FLEX_HOME"].dup if defined?(ENV) && ENV["FLEX_HOME"] != nil
 
 class << self
-
-	include ASRake::PathUtils
+	
+	include ASRake
 	
 	@@initialized = false
 
@@ -36,25 +37,33 @@ class << self
 		@@initialized = true
 		@@root = nil
 		missing = {}
-		# Find where the flex sdk is installed
-		SDK_PATHS.each do |path|
+
+		# clean up paths
+		SDK_PATHS.map do |path|
+			path.strip!
 			#remove /bin/ fom the end of the path if it exists
 			path.sub!(/[\/\\]bin[\/\\]?$/,'')
+		end
+
+		# Find where the flex sdk is installed
+		SDK_PATHS.each do |path|
 			if File.exists?(path)
 				missing[SDK_PATHS] = []
 
 				@@configs.each do |name|
-					config = c File.join(path, 'frameworks', "#{name}.xml")
+					config = Path::env File.join(path, 'frameworks', "#{name}.xml")
 					missing[SDK_PATHS] << config if !File.exists?(config)
 					config = "\"#{config}\"" if config =~ /\s/
 					instance_variable_set "@#{name.gsub('-','_')}", config
+					(instance_variable_get "@#{name.gsub('-','_')}").freeze
 				end
 
 				@@executables.each do |name|
-					exec = c File.join(path, 'bin', name)
+					exec = Path::env File.join(path, 'bin', name)
 					missing[SDK_PATHS] << exec if !File.exists?(exec)
 					exec = "\"#{exec}\"" if exec =~ /\s/
 					instance_variable_set "@#{name}", exec
+					(instance_variable_get "@#{name}").freeze
 				end
 				
 				if missing[SDK_PATHS].empty?
@@ -72,7 +81,9 @@ class << self
 				str << SDK_PATHS.join("\n=> ")
 				str << "\n"
 			end
-			str << "Append a valid SDK path in your rakefile, e.g.:\nFlexSDK::SDK_PATHS << 'C:\\develop\\sdk\\flex_sdk_4.6.0.23201'"
+			str << "Append a valid SDK path in your rakefile, e.g.:\n"
+			str << "FlexSDK::SDK_PATHS << 'C:\\develop\\sdk\\flex_sdk_4.6.0.23201'\n"
+			str << "or add an environment variable FLEX_HOME"
 			#str << "\nFor more information, see: http://adobe.com/go/flex_sdk/"
 			fail str
 		end

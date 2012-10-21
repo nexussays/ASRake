@@ -5,7 +5,6 @@ require 'zip/zip'
 module ASRake
 class Package < BaseTask
 
-	include ASRake::PathUtils
 	include Rake::DSL
 	
 	attr_accessor :files
@@ -20,7 +19,7 @@ class Package < BaseTask
 	def files= value
 		@files = value
 		files.each do |to, from|
-			file output => [cf(from)]
+			file output => [Path::forward(from)]
 		end
 	end
 
@@ -32,7 +31,7 @@ class Package < BaseTask
 		rm_r output rescue nil
 		Zip::ZipFile.open(output, Zip::ZipFile::CREATE) do |zipfile|
 			files.each do |to, from|
-				zipfile.add(cf(to), cf(from))
+				zipfile.add(Path::forward(to), Path::forward(from))
 			end
 		end
 	end

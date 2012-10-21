@@ -5,7 +5,6 @@ require 'asrake/asdoc'
 module ASRake
 class Mxmlc < BaseCompiler
 
-	include ASRake::PathUtils
 	include Rake::DSL
 	
 	def initialize(swf_file)

@@ -5,7 +5,6 @@ require 'nokogiri'
 module ASRake
 class BaseCompiler < BaseTask
 
-	include ASRake::PathUtils
 	include Rake::DSL
 	
 	#
@@ -44,6 +43,14 @@ class BaseCompiler < BaseTask
 
 		super(file)
 
+		# set dependencies on all .as and .mxml files in the source paths
+		dependencies = FileList.new
+		self.source_path.each do |path|
+			dependencies.include(Path::forward File.join(path, "**/*.as"))
+			dependencies.include(Path::forward File.join(path, "**/*.mxml"))
+		end
+		file(self.output => dependencies) if !dependencies.empty?
+		
 		# allow setting source_path with '=' instead of '<<'
 		# actually, no, this is really bad and confusing we should probably throw when they try to assign
 		#self.source_path = [self.source_path] if self.source_path.is_a? String
@@ -102,7 +109,6 @@ class BaseCompiler < BaseTask
 					flex_config = Nokogiri::XML(File.read(config))
 					
 					is_target_defined = true if flex_config.at_css('target-player')
-					#configSource? = true if 
 				end
 			end
 		end
@@ -112,16 +118,13 @@ class BaseCompiler < BaseTask
 		# TODO: iterate over all non-default config files provided and look for source-path entries
 		#fail "You must add at least one path to 'source_path' for #{self}" if source_path.empty? && !configSource?
 
-		# TODO: iterate over all non-default config files provided and look for output
-		fail "You must define 'output' for #{self}" if self.output == nil
-
 		#
 		# validation complete, generate build args
 		#
 
 		args = ""
 		# set output as directory if it ends in a trailing slash
-		args << " -output=#{cf output}"
+		args << " -output=#{Path::forward output}"
 		args << " -directory=true" if output_is_dir?
 
 		args << " -target-player=#{target_player}" if self.target_player != nil
@@ -130,23 +133,23 @@ class BaseCompiler < BaseTask
 		args << " +configname=air" if self.isAIR
 
 		args << " -debug=#{debug}"
-		args << " -source-path=#{cf source_path.join(',')}" if !self.source_path.empty?
+		args << " -source-path=#{Path::forward source_path.join(',')}" if !self.source_path.empty?
 
 		# add the -load-config option if it is anything other than the default
 		unless self.load_config.length == 1 && is_default_config?(self.load_config[0])
 			# if the default flex config is still in the load_config array, then append all config files, otherwise have the first one replace
 			op = has_default_config_file? ? "+=" : "="
 			self.load_config.each do |config|
-				args << " -load-config#{op}#{cf config}" unless is_default_config?(config)
+				args << " -load-config#{op}#{Path::forward config}" unless is_default_config?(config)
 				op = "+="
 			end
 		end
 
-		args << " -library-path=#{cf library_path.join(',')}" if !self.library_path.empty?
-		args << " -external-library-path=#{cf external_library_path.join(',')}" if !self.external_library_path.empty?
-		args << " -include-libraries=#{cf include_libraries.join(',')}" if !self.include_libraries.empty?
+		args << " -library-path=#{Path::forward library_path.join(',')}" if !self.library_path.empty?
+		args << " -external-library-path=#{Path::forward external_library_path.join(',')}" if !self.external_library_path.empty?
+		args << " -include-libraries=#{Path::forward include_libraries.join(',')}" if !self.include_libraries.empty?
 
-		args << " -dump-config=#{cf dump_config}" if self.dump_config != nil
+		args << " -dump-config=#{Path::forward dump_config}" if self.dump_config != nil
 		
 		args << " #{additional_args}" if self.additional_args != nil
 		#args << ' -include-file images\core_logo.png ..\nexuslib\code\etc\core_logo.png'
@@ -180,7 +183,7 @@ class BaseCompiler < BaseTask
 		advice = []
 		if((target_player == nil || Float(target_player) < 11) && line.include?("Error: Access of undefined property JSON"))
 			advice << "Be sure you are compiling with 'target_player' set to 11.0 or higher"
-			advice << "to have access to the native JSON parser. It is currently set to #{target_player}"
+			advice << "to have access to the native JSON parser. Your target_player is currently #{target_player}"
 		elsif line.include?("Error: The definition of base class Object was not found")
 			advice << "If you have removed the default flex-config by setting 'load_config' to"
 			advice << "an empty or alternate value using = instead of << you must be sure to"
