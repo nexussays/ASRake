@@ -4,7 +4,8 @@ require 'nokogiri'
 
 # http://help.adobe.com/en_US/flex/using/WSd0ded3821e0d52fe1e63e3d11c2f44bc36-7ffa.html
 
-class ASRake::Asdoc
+module ASRake
+class Asdoc < BaseTask
 
 	include Rake::DSL
 	include ASRake
@@ -115,9 +116,8 @@ class ASRake::Asdoc
 		attr_accessor name
 	end
 
-	def initialize(output=nil)
-
-		raise "Output directory must be provided to ASDoc.new" if output == nil
+	def initialize(output)
+		super
 
 		# set all defaults
 		@@compiler_args.each do |name, type|
@@ -125,8 +125,6 @@ class ASRake::Asdoc
 		end
 
 		@doc_sources = []
-
-		@output = output
 
 		yield self if block_given?
 	end
@@ -181,4 +179,5 @@ class ASRake::Asdoc
 		run("#{FlexSDK::asdoc} #{args}", true, &block)
 	end
 
+end
 end

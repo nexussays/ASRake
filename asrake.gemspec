@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
 	spec.name        = 'asrake'
-	spec.version     = '0.13.1'
+	spec.version     = '0.13.2'
 	spec.platform	  = Gem::Platform::RUBY
 	
 	spec.authors     = ['Malachi Griffie']
