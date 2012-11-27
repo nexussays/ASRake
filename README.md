@@ -1,13 +1,22 @@
-ASRake
-======
+# ASRake
 
-**A Rake library for Actionscript 3, Flex, and AIR projects.**
+**Quickly and easily create build scripts for Actionscript 3, Flex, and AIR projects.**
+
+
+## Installation
 
 ### `gem install asrake`
 
+Or add this line to your application's Gemfile:
 
-Overview
---------
+    gem 'asrake'
+
+And then execute:
+
+    $ bundle
+
+
+## Usage
 
 Add the path(s) to your Flex SDK for all systems that will need to run the Rake tasks.
 ```ruby
@@ -23,10 +32,6 @@ Arguments match those passed to the compiler (mxmlc, compc, adt, etc) with hyphe
 > Since this is still in development, not all compiler arguments have a property mapped to them. Use `additional_args` to pass whatever text you want into the compiler.
 
 Convenience methods are provided for `include_libraries`, `external_library_path`, and `library_path`; you can instead use `statically_link`, `dynamically_link`, and `statically_link_only_referenced_classes` respectively.
-
-
-How to Tasks
-------------
 
 ### Build a SWF or SWC
 
@@ -136,8 +141,7 @@ namespace :version do
 end
 ```
 
-Additional Functionality
-------------------------
+## Additional Functionality
 
 ### New copy method
 
@@ -178,3 +182,10 @@ args.execute()
 	mxmlc.source_path << "bin/src"
 end).execute()
 ```
+
+## Contributing
+
+1. Fork this project
+2. Create a feature branch
+3. Make your changes
+4. Create a Pull Request

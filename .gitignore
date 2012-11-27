@@ -1,8 +1,10 @@
-bin/
-obj/
-*.lxml
-scratch/*
-.project
 pkg/
-etc/
-test/*
+test/
+doc/
+*.gem
+*.rbc
+.bundle
+.config
+.yardoc
+Gemfile.lock
+InstalledFiles

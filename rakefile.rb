@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'rubygems/package_task'
+require 'bundler/gem_tasks'
 
 task :default do
 	system "rake --tasks"
@@ -14,8 +15,8 @@ task :deploy => :package do
 	sh "gem push #{package.package_dir}/#{package.name}.gem"
 end
 
-desc "Install the gem locally"
-task :test => [:package, :uninstall] do
+desc "Package & install the gem locally"
+task :test => [:uninstall, :package] do
 	sh "gem install #{package.package_dir}/#{package.name}.gem"
 end
 
