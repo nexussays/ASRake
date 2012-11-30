@@ -46,8 +46,6 @@ class Adt < BaseTask
 		@keystore = "cert.p12"
 		@application_descriptor = "application.xml"
 
-		super(file)
-
 		self.include_files.each do |value|
 			files = Path::forward value.sub(' ', '/')
 			files.sub!(/\.$/, "*")
@@ -62,9 +60,7 @@ class Adt < BaseTask
 		#	FileList[files].each {|file| puts @output; Rake::FileTask.define_task @output => file}
 		#end
 
-		create_keystore_task()
-		create_application_descriptor_task()
-
+		super(file)
 	end
 
 	# define named task first so if desc was called it will be attached to it instead of the file task
@@ -90,10 +86,10 @@ class Adt < BaseTask
 		command << " -keystore #{self.keystore}"
 		command << " -storepass #{self.storepass}"
 		command << " -target #{target}" if target != nil && target != "air"
+		command << " #{additional_args}" if self.additional_args != nil
 		command << " #{self.output}"
 		command << " #{self.application_descriptor}"
 		self.include_files.each {|entry| command << " -C #{entry}" }
-		command << " #{additional_args}" if self.additional_args != nil
 		
 		status = run command, false
 
@@ -146,21 +142,22 @@ class Adt < BaseTask
 
 	def keystore= value
 		# clear prvious keystore task
-		Rake::Task[@keystore].clear
+		Rake::Task[@keystore].clear rescue nil
 		@keystore = value
-		create_keystore_task()
+		
+		file @keystore do
+			run "#{FlexSDK::adt} -certificate -cn #{self.keystore_name} 1024-RSA #{@keystore} #{self.storepass}"
+			puts "Certificate created at #{@keystore} with password '#{self.storepass}'"
+		end
+
+		file self.output => @keystore
 	end
 
 	def application_descriptor= value
 		# clear the previous task
-		Rake::Task[@application_descriptor].clear
+		Rake::Task[@application_descriptor].clear rescue nil
 		@application_descriptor = value
-		create_application_descriptor_task()
-	end
 
-	private
-
-	def create_application_descriptor_task
 		if File.exists?(@application_descriptor)
 			file self.output => @application_descriptor
 
@@ -169,15 +166,6 @@ class Adt < BaseTask
 			#file self.output => swf
 			#raise "Initial content in #{@application_descriptor} does not exist" if !File.exists?(swf)
 		end
-	end
-
-	def create_keystore_task
-		file self.keystore do
-			run "#{FlexSDK::adt} -certificate -cn #{self.keystore_name} 1024-RSA #{self.keystore} #{self.storepass}"
-			puts "Certificate created at #{self.keystore} with password '#{self.storepass}'"
-		end
-
-		file self.output => self.keystore
 	end
 
 end
