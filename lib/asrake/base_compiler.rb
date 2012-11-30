@@ -40,8 +40,7 @@ class BaseCompiler < BaseTask
 		@debug = false
 		#include default flex-config
 		@load_config = [ FlexSDK::flex_config ]
-
-		super(file)
+		@additional_args = ""
 
 		# set dependencies on all .as and .mxml files in the source paths
 		dependencies = FileList.new
@@ -55,6 +54,7 @@ class BaseCompiler < BaseTask
 		# actually, no, this is really bad and confusing we should probably throw when they try to assign
 		#self.source_path = [self.source_path] if self.source_path.is_a? String
 
+		super(file)
 	end
 
 	# provide a more understandable alias 
@@ -133,7 +133,7 @@ class BaseCompiler < BaseTask
 		args << " +configname=air" if self.isAIR
 
 		args << " -debug=#{debug}"
-		args << " -source-path=#{Path::forward source_path.join(',')}" if !self.source_path.empty?
+		args << " -source-path+=#{Path::forward source_path.join(',')}" if !self.source_path.empty?
 
 		# add the -load-config option if it is anything other than the default
 		unless self.load_config.length == 1 && is_default_config?(self.load_config[0])
@@ -145,24 +145,32 @@ class BaseCompiler < BaseTask
 			end
 		end
 
-		args << " -library-path=#{Path::forward library_path.join(',')}" if !self.library_path.empty?
-		args << " -external-library-path=#{Path::forward external_library_path.join(',')}" if !self.external_library_path.empty?
-		args << " -include-libraries=#{Path::forward include_libraries.join(',')}" if !self.include_libraries.empty?
+		args << " -library-path+=#{Path::forward library_path.join(',')}" if !self.library_path.empty?
+		args << " -external-library-path+=#{Path::forward external_library_path.join(',')}" if !self.external_library_path.empty?
+		args << " -include-libraries+=#{Path::forward include_libraries.join(',')}" if !self.include_libraries.empty?
 
 		args << " -dump-config=#{Path::forward dump_config}" if self.dump_config != nil
 		
-		args << " #{additional_args}" if self.additional_args != nil
-		#args << ' -include-file images\core_logo.png ..\nexuslib\code\etc\core_logo.png'
+		args << " #{additional_args}" if self.additional_args != nil && self.additional_args != ""
 		
 		return args
 	end
 
 	def execute
 		puts "> #{@exe}#{generate_args}"
-		run "#{@exe}#{generate_args}" do |line|
+		status = run "#{@exe}#{generate_args}", false do |line|
 			puts ">    #{line}"
 			generate_error_message_tips(line)
 		end
+
+		handle_execute_error status.exitstatus
+
+		raise "Operation exited with status #{status.exitstatus}" if status.exitstatus != 0
+	end
+
+	protected
+
+	def handle_execute_error code
 	end
 
 	private

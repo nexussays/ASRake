@@ -16,7 +16,7 @@ class BaseTask
 	def initialize(file)
 
 		raise "An output file must be provided" if file == nil
-
+		
 		@output = file.to_s
 		# if the output path ends in a path separator, it is a directory
 		if @output =~ /[\/\\]$/
@@ -27,8 +27,6 @@ class BaseTask
 			@output_dir = File.dirname(@output)
 			@output_file = File.basename(@output)
 		end
-
-		yield self if block_given?
 
 		# create file task for output
 		file self.output do
@@ -42,6 +40,8 @@ class BaseTask
 			directory self.output_dir
 			file self.output => self.output_dir
 		end
+
+		yield self if block_given?
 	end
 
 	def output_is_dir?
@@ -63,7 +63,7 @@ class BaseTask
 		@output
 	end
 
-	# this is probably a terrible idea
+	# used so we can add this task to a FileList. This is probably a terrible idea.
 	def pathmap *args
 		to_s.pathmap *args
 	end
