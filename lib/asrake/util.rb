@@ -65,8 +65,8 @@ def run(command, abort_on_failure = true)
 
 	if $?.exitstatus != 0
 		msg = "Operation exited with status #{$?.exitstatus}"
-		fail msg if abort_on_failure
-		puts msg
+		raise msg if abort_on_failure
+		#puts msg
 	end
 
 	return $?
