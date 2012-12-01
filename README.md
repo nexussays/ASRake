@@ -2,23 +2,14 @@
 
 **Quickly and easily create build scripts for Actionscript 3, Flex, and AIR projects.**
 
-
 ## Installation
 
 ### `gem install asrake`
 
-Or add this line to your application's Gemfile:
-
-    gem 'asrake'
-
-And then execute:
-
-    $ bundle
-
-
 ## Usage
 
-Add the path(s) to your Flex SDK for all systems that will need to run the Rake tasks.
+Add the path(s) to your Flex SDK for all systems that will need to run the Rake tasks. If set, the value of the environment variable `FLEX_HOME` is added by default.
+
 ```ruby
 FlexSDK::SDK_PATHS << 'C:\develop\sdk\flex_sdk_4.6.0.23201'
 FlexSDK::SDK_PATHS << "C:/develop/sdk/flex_sdk 4.5.1"
@@ -36,35 +27,40 @@ Convenience methods are provided for `include_libraries`, `external_library_path
 ### Build a SWF or SWC
 
 ```
-ASRake::Mxmlc(file) |self|
+ASRake::Mxmlc.new(output)
 ```
 ```
-ASRake::Compc(file) |self|
+ASRake::Compc.new(output)
 ```
 
 Assign arguments for your build and optionally run it with a friendlier-named task:
 
 ```ruby
-args = ASRake::Compc.new "bin/bin/my_project.swc"
+args = ASRake::Compc.new "bin/my_project.swc"
 args.target_player = 11.0
 args.debug = true
-args.source_path << "bin/src"
+args.source_path << "src"
 args.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
 
 desc "Build swc"
 task :build => args
 ```
 
-You can also define arguments in a block on creation:
+You can chain together complex builds and the dependencies will be properly handled:
 
 ```ruby
+bar = ASRake::Compc.new "lib/other_project/bin/proj.swc"
+bar.target_player = 11.0
+bar.source_path << "lib/other_project/src"
+
+foo = ASRake::Compc.new "bin/my_project.swc"
+foo.target_player = 11.0
+foo.debug = true
+foo.source_path << "src"
+foo.library_path << bar
+
 desc "Build swc"
-ASRake::Compc.new "bin/bin/my_project.swc" do |build|
-	build.target_player = 11.0
-	build.debug = true
-	build.source_path << "bin/src"
-	build.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
-end
+task :build => foo
 ```
 
 ### Include ASDoc in a SWC
@@ -73,12 +69,10 @@ If you are compiling with `Compc`, you can set the field `include_asdoc` to have
 
 ```ruby
 desc "Build swc"
-ASRake::Compc.new "bin/bin/my_project.swc" do |build|
-	build.target_player = 11.0
-	build.source_path << "bin/src"
-	build.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
-	build.include_asdoc = true
-end
+swc = ASRake::Compc.new "bin/bin/my_project.swc"
+swc.target_player = 11.0
+swc.source_path << "bin/src"
+swc.include_asdoc = true
 ```
 
 ### Build an AIR
@@ -87,10 +81,9 @@ Compile your SWF file as normal, but set the `isAIR` property to true
 
 ```ruby
 desc "Build app"
-ASRake::Mxmlc.new "bin/my_app.swf" do |build|
-	build.load_config << "mxmlc_config.xml"
-	build.isAIR = true
-end
+my_app = ASRake::Mxmlc.new "bin/my_app.swf"
+my_app.load_config << "mxmlc_config.xml"
+my_app.isAIR = true
 ```
 
 Provide the package task with the AIR and keystore information. If the key doesn't exist, it will be created.
@@ -98,14 +91,12 @@ Provide the package task with the AIR and keystore information. If the key doesn
 > Be sure that the swf file is included in the package (eg, it is included here by packaging everything in the bin directory with `-C bin .`)
 
 ```ruby
-ASRake::AdtTask.new :package => :build do |package|
-	package.output = "bin/my_app.air"
-	package.keystore = "my_app_cert.p12"
-	package.keystore_name = "my_app"
-	package.storepass = "my_app"
-	package.tsa = "none"
-	package.additional_args = "-C bin ."
-end
+air = ASRake::Adt.new "deploy/my_app.air"
+air.keystore = "cert.p12"
+air.keystore_name = "my_app"
+air.storepass = "my_app"
+air.tsa = "none"
+air.include_files << "bin ."
 ```
 
 ### Version
@@ -159,7 +150,7 @@ cp_u "path/to/file.xml", "/dest/dest.xml"
 # copy an array of files
 cp_u %w{application.xml my_app.swf config.json}, "/dest"
 
-# use FileList, Dir.glob(), or othr methods to copy groups of files
+# use FileList, Dir.glob(), or other methods to copy groups of files
 cp_u FileList["lib/**/*.swc"], "bin/lib"
 ```
 
@@ -170,17 +161,11 @@ You don't need to create a rake task to build a swf or swc. Just call `execute()
 > Note that this will not do any dependency checks, so the build will run even if it is unnecessary
 
 ```ruby
-args = ASRake::Compc.new "bin/bin/my_project.swc"
+args = ASRake::Compc.new "bin/my_project.swc"
 args.target_player = 11.0
-args.source_path << "bin/src"
+args.source_path << "src"
 args.statically_link_only_referenced_classes << "lib/lib_used_in_project.swc"
 args.execute()
-
-(ASRake::Mxmlc.new "bin/bin/my_project.swf" do |mxmlc|
-	mxmlc.target_player = 11.0
-	mxmlc.debug = true
-	mxmlc.source_path << "bin/src"
-end).execute()
 ```
 
 ## Contributing
