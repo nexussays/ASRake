@@ -1,9 +1,9 @@
-require 'asrake/base_task'
+require 'asrake/base_executable'
 require 'asrake/flexsdk'
 require 'nokogiri'
 
 module ASRake
-class BaseCompiler < BaseTask
+class BaseCompiler < BaseExecutable
 
 	include Rake::DSL
 	
@@ -30,6 +30,8 @@ class BaseCompiler < BaseTask
 	attr_accessor *@@args
 
 	def initialize(file, exe_path)
+		super(file)
+
 		@exe = exe_path
 
 		@isAIR = false
@@ -41,20 +43,10 @@ class BaseCompiler < BaseTask
 		#include default flex-config
 		@load_config = [ FlexSDK::flex_config ]
 		@additional_args = ""
-
-		# set dependencies on all .as and .mxml files in the source paths
-		dependencies = FileList.new
-		self.source_path.each do |path|
-			dependencies.include(Path::forward File.join(path, "**/*.as"))
-			dependencies.include(Path::forward File.join(path, "**/*.mxml"))
-		end
-		file(self.output => dependencies) if !dependencies.empty?
 		
 		# allow setting source_path with '=' instead of '<<'
 		# actually, no, this is really bad and confusing we should probably throw when they try to assign
 		#self.source_path = [self.source_path] if self.source_path.is_a? String
-
-		super(file)
 	end
 
 	# provide a more understandable alias 
@@ -171,6 +163,20 @@ class BaseCompiler < BaseTask
 	protected
 
 	def handle_execute_error code
+	end
+	
+	def task_pre_invoke
+		super
+		# set dependencies on all .as and .mxml files in the source paths
+		dependencies = FileList.new
+		self.source_path.each do |path|
+			dependencies.include(Path::forward File.join(path, "**/*.as"))
+			dependencies.include(Path::forward File.join(path, "**/*.mxml"))
+		end
+		dependencies.include(self.library_path) if !self.library_path.empty?
+		dependencies.include(self.external_library_path) if !self.external_library_path.empty?
+		dependencies.include(self.include_libraries) if !self.include_libraries.empty?
+		@task.enhance(dependencies) if !dependencies.empty?
 	end
 
 	private

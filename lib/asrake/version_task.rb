@@ -1,9 +1,9 @@
-require 'rake/tasklib'
-
 require 'asrake/version/version'
 
 module ASRake
-class VersionTask < Rake::TaskLib
+class VersionTask
+
+	include Rake::DSL
 
 	attr_accessor :filename
 	attr_accessor :filetype

@@ -1,9 +1,9 @@
 require 'asrake/util'
-require 'asrake/base_task'
+require 'asrake/base_executable'
 require 'nokogiri'
 
 module ASRake
-class Adt < BaseTask
+class Adt < BaseExecutable
 
 	include Rake::DSL
 	include ASRake
@@ -38,6 +38,7 @@ class Adt < BaseTask
 	attr_accessor :additional_args
 
 	def initialize(file)
+		super
 
 		self.storetype = "pkcs12"
 		self.target = "air"
@@ -45,22 +46,6 @@ class Adt < BaseTask
 
 		@keystore = "cert.p12"
 		@application_descriptor = "application.xml"
-
-		self.include_files.each do |value|
-			files = Path::forward value.sub(' ', '/')
-			files.sub!(/\.$/, "*")
-			FileList[files].each {|file|  Rake::FileTask.define_task self.output => file}
-		end
-
-		# add a prerequisite file task for all files included in the package
-		#def include_files.<<(value)
-		#	super
-		#	files = Path::forward value.sub(' ', '/')
-		#	files.sub!(/\.$/, "*")
-		#	FileList[files].each {|file| puts @output; Rake::FileTask.define_task @output => file}
-		#end
-
-		super(file)
 	end
 
 	# define named task first so if desc was called it will be attached to it instead of the file task
@@ -140,32 +125,40 @@ class Adt < BaseTask
 		end
 	end
 
-	def keystore= value
-		# clear prvious keystore task
-		Rake::Task[@keystore].clear rescue nil
-		@keystore = value
-		
-		file @keystore do
-			run "#{FlexSDK::adt} -certificate -cn #{self.keystore_name} 1024-RSA #{@keystore} #{self.storepass}"
-			puts "Certificate created at #{@keystore} with password '#{self.storepass}'"
+	protected
+
+	def task_pre_invoke
+		super
+
+		dependencies = FileList.new
+		self.include_files.each do |value|
+			dependencies.include(Path::forward value.sub(' ', '/').sub(/\.$/, "*"))
+		end
+		@task.enhance(dependencies) if !dependencies.empty?
+
+		if self.keystore != nil
+			file self.keystore do
+				run "#{FlexSDK::adt} -certificate -cn #{self.keystore_name} 1024-RSA #{self.keystore} #{self.storepass}"
+				puts "Certificate created at #{self.keystore} with password '#{self.storepass}'"
+			end
+			@task.enhance([self.keystore])
 		end
 
-		file self.output => @keystore
-	end
-
-	def application_descriptor= value
-		# clear the previous task
-		Rake::Task[@application_descriptor].clear rescue nil
-		@application_descriptor = value
-
-		if File.exists?(@application_descriptor)
-			file self.output => @application_descriptor
-
+		if self.application_descriptor != nil && File.exists?(self.application_descriptor)
+			@task.enhance([self.application_descriptor])
 			#app_xml = Nokogiri::XML(File.read(@application_descriptor))
 			#swf = app_xml.at_css("initialWindow > content").content.to_s
 			#file self.output => swf
 			#raise "Initial content in #{@application_descriptor} does not exist" if !File.exists?(swf)
 		end
+
+		# add a prerequisite file task for all files included in the package
+		#def include_files.<<(value)
+		#	super
+		#	files = Path::forward value.sub(' ', '/')
+		#	files.sub!(/\.$/, "*")
+		#	FileList[files].each {|file| puts @output; Rake::FileTask.define_task @output => file}
+		#end
 	end
 
 end

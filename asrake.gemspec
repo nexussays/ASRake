@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |spec|
 	spec.name        = 'asrake'
-	spec.version     = '0.13.3'
+	spec.version     = '0.14.0'
 	spec.platform	  = Gem::Platform::RUBY
 	
 	spec.authors     = ["Malachi Griffie"]

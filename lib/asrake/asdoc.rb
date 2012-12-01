@@ -1,11 +1,10 @@
 require 'asrake/util'
-require 'rake/tasklib'
 require 'nokogiri'
 
 # http://help.adobe.com/en_US/flex/using/WSd0ded3821e0d52fe1e63e3d11c2f44bc36-7ffa.html
 
 module ASRake
-class Asdoc < BaseTask
+class Asdoc < BaseExecutable
 
 	include Rake::DSL
 	include ASRake
@@ -125,8 +124,6 @@ class Asdoc < BaseTask
 		end
 
 		@doc_sources = []
-
-		yield self if block_given?
 	end
 
 	def add(args)
@@ -177,6 +174,23 @@ class Asdoc < BaseTask
 		args << " #{additional_args}" if self.additional_args != nil
 		
 		run("#{FlexSDK::asdoc} #{args}", true, &block)
+	end
+
+	protected
+
+	def handle_execute_error code
+	end
+	
+	def task_pre_invoke
+		super
+		# set dependencies on all .as and .mxml files in the source paths
+		dependencies = FileList.new
+		self.source_path.each do |path|
+			dependencies.include(Path::forward File.join(path, "**/*.as"))
+			dependencies.include(Path::forward File.join(path, "**/*.mxml"))
+		end
+		dependencies.include(self.library_path) if !self.library_path.empty?
+		@task.enhance(dependencies) if !dependencies.empty?
 	end
 
 end

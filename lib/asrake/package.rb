@@ -1,9 +1,9 @@
 require 'asrake/util'
-require 'asrake/base_task'
+require 'asrake/base_executable'
 require 'zip/zip'
 
 module ASRake
-class Package < BaseTask
+class Package < BaseExecutable
 
 	include Rake::DSL
 	
