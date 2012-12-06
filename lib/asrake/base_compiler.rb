@@ -105,10 +105,10 @@ class BaseCompiler < BaseExecutable
 			end
 		end
 
-		fail "You must define 'target_player' for #{self}" if self.target_player == nil && !is_target_defined
+		raise "You must define 'target_player' for #{self}" if self.target_player == nil && !is_target_defined
 
 		# TODO: iterate over all non-default config files provided and look for source-path entries
-		#fail "You must add at least one path to 'source_path' for #{self}" if source_path.empty? && !configSource?
+		#raise "You must add at least one path to 'source_path' for #{self}" if source_path.empty? && !configSource?
 
 		#
 		# validation complete, generate build args
@@ -167,6 +167,7 @@ class BaseCompiler < BaseExecutable
 	
 	def task_pre_invoke
 		super
+		# TODO: get dependencies from config files
 		# set dependencies on all .as and .mxml files in the source paths
 		dependencies = FileList.new
 		self.source_path.each do |path|

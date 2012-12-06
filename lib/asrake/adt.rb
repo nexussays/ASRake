@@ -51,12 +51,12 @@ class Adt < BaseExecutable
 	# define named task first so if desc was called it will be attached to it instead of the file task
 	def execute
 
-		raise "You must define 'output' for #{self}" if self.output == nil
-		raise "You must define 'application_descriptor'" if self.application_descriptor == nil || !File.exists?(self.application_descriptor)
-		raise "You must define 'keystore' for #{self}" if self.keystore == nil
-		raise "You must define 'keystore_name' for #{self}" if self.keystore_name == nil
-		raise "You must define 'storepass' for #{self}" if self.storepass == nil
-		raise "You must define 'include_files' for #{self}\neg: include_files << 'bin .'" if self.include_files.length < 1
+		#raise "You must define 'output' for #{self}" if self.output == nil
+		#raise "You must define 'application_descriptor'" if self.application_descriptor == nil || !File.exists?(self.application_descriptor)
+		#raise "You must define 'keystore' for #{self}" if self.keystore == nil
+		#raise "You must define 'keystore_name' for #{self}" if self.keystore_name == nil
+		#raise "You must define 'storepass' for #{self}" if self.storepass == nil
+		#raise "You must define 'include_files' for #{self}\neg: include_files << 'bin .'" if self.include_files.length < 1
 
 		# TODO: Somehow confirm that the initialWindow content is included in the build
 		#app_xml = Nokogiri::XML(File.read(application_descriptor))

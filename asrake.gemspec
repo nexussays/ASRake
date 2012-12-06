@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |spec|
 	spec.name        = 'asrake'
-	spec.version     = '0.14.0'
+	spec.version     = '0.14.1'
 	spec.platform	  = Gem::Platform::RUBY
 	
 	spec.authors     = ["Malachi Griffie"]
@@ -9,13 +9,9 @@ Gem::Specification.new do |spec|
 	spec.homepage    = 'https://github.com/nexussays/ASRake'
 	spec.license     = 'MIT'
 
-	spec.summary     = <<DESC
-A cross-platform Rake library to quickly and easily create build scripts for
-Actionscript 3, Flex, and AIR projects.
-DESC
+	spec.summary     = "A Rake library for Actionscript 3, Flex, and AIR projects."
 	spec.description = <<DESC
-A Rake library for Actionscript 3, Flex, and AIR projects.
-See full documentation at https://github.com/nexussays/ASRake/blob/master/README.md
+A Rake-based library for quickly and easily creating build scripts for Actionscript 3, Flex, and AIR projects.
 DESC
 
 	spec.files       = Dir['lib/**/*.rb'] + %w[LICENSE README.md asrake.gemspec Gemfile]

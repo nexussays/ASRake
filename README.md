@@ -8,7 +8,7 @@
 
 ## Usage
 
-Add the path(s) to your Flex SDK for all systems that will need to run the Rake tasks. If set, the value of the environment variable `FLEX_HOME` is added by default.
+Add the path(s) to your Flex SDK for all systems that will need to run the Rake tasks. The value of the environment variable `FLEX_HOME` is added to this list by default if it is defined on your system.
 
 ```ruby
 FlexSDK::SDK_PATHS << 'C:\develop\sdk\flex_sdk_4.6.0.23201'
@@ -88,7 +88,7 @@ my_app.isAIR = true
 
 Provide the package task with the AIR and keystore information. If the key doesn't exist, it will be created.
 
-> Be sure that the swf file is included in the package (eg, it is included here by packaging everything in the bin directory with `-C bin .`)
+> Be sure that the swf file is included in the package (eg, it is included here by packaging everything in the bin directory: `air.include_files << "bin ."`)
 
 ```ruby
 air = ASRake::Adt.new "deploy/my_app.air"
