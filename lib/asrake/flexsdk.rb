@@ -2,7 +2,7 @@ require 'asrake/util'
 
 class FlexSDK
 
-SDK_PATHS = []
+SDK_PATHS = [] unless const_defined?(:SDK_PATHS)
 SDK_PATHS << ENV["FLEX_HOME"].dup if defined?(ENV) && ENV["FLEX_HOME"] != nil
 
 class << self
