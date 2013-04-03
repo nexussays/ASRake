@@ -98,6 +98,10 @@ class BaseCompiler < BaseExecutable
 			unless self.load_config.length == 1 && is_default_config?(self.load_config[0])
 				# load config in reverse so last added has priority
 				self.load_config.reverse.each do |config|
+					# FlexSDK class will add quotation marks if the path contains spaces so we can easily
+					# write it out to a system call, strip them here
+					config = config.gsub(/^\"|\"$/,"")
+					
 					flex_config = Nokogiri::XML(File.read(config))
 					
 					is_target_defined = true if flex_config.at_css('target-player')
